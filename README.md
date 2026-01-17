@@ -1,2 +1,1 @@
-# proiect_PIU
-Echipa team
+simple react login form with an animation
