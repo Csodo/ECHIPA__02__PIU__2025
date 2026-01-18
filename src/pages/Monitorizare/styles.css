@@ -1,0 +1,152 @@
+.monitor-layout {
+  display: grid;
+  gap: 22px;
+  background: rgba(8, 8, 8, 0.6);
+  color: var(--white);
+  border-radius: 18px;
+  padding: 26px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.monitor-stats {
+  display: grid;
+  gap: 10px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.monitor-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+}
+
+.monitor-stat strong {
+  font-weight: 600;
+}
+
+.monitor-dots {
+  flex: 1;
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.35);
+  opacity: 0.8;
+}
+
+.monitor-refresh {
+  border-radius: 999px;
+  border: 1px solid rgba(227, 23, 47, 0.6);
+  background: rgba(227, 23, 47, 0.15);
+  color: var(--white);
+  font-weight: 600;
+  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.refresh-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.monitor-section h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.monitor-table {
+  display: grid;
+  gap: 8px;
+}
+
+.monitor-row {
+  display: grid;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.monitor-producers .monitor-row {
+  grid-template-columns: 70px minmax(120px, 1.4fr) 90px 160px 120px;
+}
+
+.monitor-consumers .monitor-row {
+  grid-template-columns: 70px minmax(140px, 1.4fr) 90px 160px;
+}
+
+.monitor-head {
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 8px;
+}
+
+.monitor-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.monitor-toggle input {
+  position: absolute;
+  opacity: 0;
+}
+
+.monitor-toggle .checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+}
+
+.monitor-toggle input:checked + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: solid var(--white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.monitor-layout .dashboard-placeholder {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--gray-300);
+  background: rgba(8, 8, 8, 0.5);
+}
+
+@media (max-width: 900px) {
+  .monitor-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .monitor-producers .monitor-row,
+  .monitor-consumers .monitor-row {
+    grid-template-columns: 70px 1fr;
+    row-gap: 6px;
+  }
+
+  .monitor-row span {
+    grid-column: 2 / -1;
+  }
+
+  .monitor-head span {
+    grid-column: auto;
+  }
+}

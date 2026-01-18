@@ -1,0 +1,98 @@
+.info-layout {
+  display: grid;
+  gap: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 24px 28px;
+  background: rgba(8, 8, 8, 0.6);
+}
+
+.info-summary {
+  display: grid;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, 1.2fr);
+  gap: 16px;
+}
+
+.info-row span {
+  color: var(--gray-300);
+}
+
+.info-row strong {
+  font-weight: 600;
+}
+
+.info-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.info-docs h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.info-docs ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.info-docs li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gray-100);
+}
+
+.info-docs a,
+.info-link-button {
+  color: var(--gray-100);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.18s ease;
+}
+
+.info-docs a:hover,
+.info-link-button:hover {
+  color: var(--white);
+}
+
+.info-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.info-detail h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.info-detail p {
+  margin: 0;
+  color: var(--gray-300);
+  line-height: 1.6;
+}
+
+.info-detail {
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .info-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
