@@ -11,6 +11,7 @@ function CalculatorView({
   onChangeMonthlySavings,
   onChangeMonthlyProduction,
   onCalculate,
+  onExportPdf,
 }) {
   return (
     <div className="calc-layout">
@@ -72,7 +73,9 @@ function CalculatorView({
               type="number"
               min="0"
               value={roiMonthlyProduction}
-              onChange={(event) => onChangeMonthlyProduction(event.target.value)}
+              onChange={(event) =>
+                onChangeMonthlyProduction(event.target.value)
+              }
             />
             <span>kWh</span>
           </div>
@@ -82,6 +85,9 @@ function CalculatorView({
       <div className="calc-actions">
         <button type="button" onClick={onCalculate}>
           Calculeaza ROI
+        </button>
+        <button type="button" onClick={onExportPdf}>
+          Exporta raport PDF
         </button>
       </div>
       <div className="calc-divider" aria-hidden="true" />
