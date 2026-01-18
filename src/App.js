@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './styles/global.css';
 import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
+import { distributorRates } from './config/distributors';
 
 function App() {
   const [username, setUsername] = useState('');
@@ -15,7 +16,7 @@ function App() {
   const [planConsumer, setPlanConsumer] = useState('Frigider');
   const [planConsumerCount, setPlanConsumerCount] = useState(1);
   const [planConsumerPower, setPlanConsumerPower] = useState(0.3);
-  const [planDistributor, setPlanDistributor] = useState('E.ON');
+  const [planDistributor, setPlanDistributor] = useState(distributorRates[0]?.name || 'E.ON');
   const [planProducers, setPlanProducers] = useState([]);
   const [planConsumers, setPlanConsumers] = useState([]);
   const [planResult, setPlanResult] = useState(null);
@@ -43,8 +44,6 @@ function App() {
     'Iluminat LED',
     'Incalzitor electric',
   ];
-
-  const distributorOptions = ['E.ON', 'Enel', 'Electrica', 'CEZ', 'Restart Energy'];
 
   const users = [
     { username: 'user1', password: 'user1' },
@@ -136,7 +135,7 @@ function App() {
     ];
   };
 
-  const handleCalculatePlan = () => {
+  const handleCalculatePlan = (nextDistributor) => {
     const totalProducerPower = planProducers.reduce(
       (sum, item) => sum + item.count * item.power,
       0
@@ -147,7 +146,12 @@ function App() {
     );
     const produced = Math.max(0.5, totalProducerPower * 1.8);
     const consumed = Math.max(0.4, totalConsumerPower * 1.4);
-    const cost = Math.max(250, Math.round(consumed * 1000));
+    const currentRate =
+      distributorRates.find((item) => item.name === (nextDistributor || planDistributor))
+        ?.price ??
+      distributorRates[0]?.price ??
+      1;
+    const cost = Math.max(250, Math.round(consumed * 1000 * currentRate));
 
     setPlanResult({
       cost,
@@ -224,7 +228,7 @@ function App() {
     setPlanConsumer('Frigider');
     setPlanConsumerCount(1);
     setPlanConsumerPower(0.3);
-    setPlanDistributor('E.ON');
+    setPlanDistributor(distributorRates[0]?.name || 'E.ON');
     setPlanProducers([]);
     setPlanConsumers([]);
     setPlanResult(null);
@@ -272,7 +276,8 @@ function App() {
   const planProps = {
     producerOptions,
     consumerOptions,
-    distributorOptions,
+    distributorOptions: distributorRates.map((item) => item.name),
+    distributorRates,
     planProducer,
     planProducerCount,
     planProducerPower,
