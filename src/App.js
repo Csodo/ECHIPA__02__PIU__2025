@@ -3,12 +3,6 @@ import './styles/global.css';
 import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
 import { distributorRates } from './config/distributors';
-import { useState } from "react";
-import "./styles/global.css";
-import DashboardPage from "./pages/Dashboard";
-import LoginPage from "./pages/Login";
-import { exportRoiPdf } from "./pages/Calculator/exportRoiPdf";
-import { distributorRates } from "./config/distributors";
 
 function App() {
   const [username, setUsername] = useState("");
@@ -43,6 +37,13 @@ function App() {
   const [selectedPanelId, setSelectedPanelId] = useState('solaris-320');
   const [selectedPanelCount, setSelectedPanelCount] = useState(4);
 
+  const producerOptions = [
+    'Panouri solare',
+    'Turbina eoliana',
+    'Microhidro',
+    'Biomasa',
+    'Generator diesel',
+  ];
   const consumerOptions = [
     "Frigider",
     "Aer conditionat",
@@ -442,24 +443,8 @@ function App() {
     });
   };
 
-  const handleExportRoiReport = async () => {
-    if (!roiResult) {
-      window.alert("Calculeaza ROI inainte de export.");
-      return;
-    }
-    const confirmed = window.confirm("Sunteti de acord?");
-    if (!confirmed) return;
-    await exportRoiPdf({
-      roiInstallCost,
-      roiPanelCost,
-      roiBatteryCost,
-      roiMonthlySavings,
-      roiMonthlyProduction,
-      roiResult,
-    });
-  };
-
   const planProps = {
+    producerOptions,
     consumerOptions,
     batteryOptions,
     distributorOptions: distributorRates.map((item) => item.name),
@@ -532,7 +517,6 @@ function App() {
     onChangeMonthlySavings: setRoiMonthlySavings,
     onChangeMonthlyProduction: setRoiMonthlyProduction,
     onCalculate: handleCalculateRoi,
-    onExportPdf: handleExportRoiReport,
   };
 
   return (
