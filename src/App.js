@@ -1,104 +1,126 @@
-import { useState } from 'react';
-import './styles/global.css';
-import DashboardPage from './pages/Dashboard';
-import LoginPage from './pages/Login';
-import { exportRoiPdf } from './pages/Calculator/exportRoiPdf';
+import { useState } from "react";
+import "./styles/global.css";
+import DashboardPage from "./pages/Dashboard";
+import LoginPage from "./pages/Login";
+import { exportRoiPdf } from "./pages/Calculator/exportRoiPdf";
+import { distributorRates } from "./config/distributors";
 
 function App() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [status, setStatus] = useState({ type: 'idle', message: '' });
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState({ type: "idle", message: "" });
   const [isAuthed, setIsAuthed] = useState(false);
-  const [activeView, setActiveView] = useState('dashboard');
-  const [planProducer, setPlanProducer] = useState('Panouri solare');
+  const [activeView, setActiveView] = useState("dashboard");
+  const [planProducer, setPlanProducer] = useState("Panouri solare");
   const [planProducerCount, setPlanProducerCount] = useState(4);
   const [planProducerPower, setPlanProducerPower] = useState(1.5);
-  const [planConsumer, setPlanConsumer] = useState('Frigider');
+  const [planConsumer, setPlanConsumer] = useState("Frigider");
   const [planConsumerCount, setPlanConsumerCount] = useState(1);
   const [planConsumerPower, setPlanConsumerPower] = useState(0.3);
-  const [planDistributor, setPlanDistributor] = useState('E.ON');
+  const [planDistributor, setPlanDistributor] = useState(
+    distributorRates[0]?.name || "E.ON",
+  );
   const [planProducers, setPlanProducers] = useState([]);
   const [planConsumers, setPlanConsumers] = useState([]);
   const [planResult, setPlanResult] = useState(null);
   const [monitorPlan, setMonitorPlan] = useState(null);
-  const [roiInstallCost, setRoiInstallCost] = useState('');
-  const [roiPanelCost, setRoiPanelCost] = useState('');
-  const [roiBatteryCost, setRoiBatteryCost] = useState('');
-  const [roiMonthlySavings, setRoiMonthlySavings] = useState('');
-  const [roiMonthlyProduction, setRoiMonthlyProduction] = useState('');
+  const [roiInstallCost, setRoiInstallCost] = useState("");
+  const [roiPanelCost, setRoiPanelCost] = useState("");
+  const [roiBatteryCost, setRoiBatteryCost] = useState("");
+  const [roiMonthlySavings, setRoiMonthlySavings] = useState("");
+  const [roiMonthlyProduction, setRoiMonthlyProduction] = useState("");
   const [roiResult, setRoiResult] = useState(null);
 
   const producerOptions = [
-    'Panouri solare',
-    'Turbina eoliana',
-    'Microhidro',
-    'Biomasa',
-    'Generator diesel',
+    "Panouri solare",
+    "Turbina eoliana",
+    "Microhidro",
+    "Biomasa",
+    "Generator diesel",
   ];
 
   const consumerOptions = [
-    'Frigider',
-    'Aer conditionat',
-    'Masina de spalat',
-    'Laptop',
-    'Iluminat LED',
-    'Incalzitor electric',
+    "Frigider",
+    "Aer conditionat",
+    "Masina de spalat",
+    "Laptop",
+    "Iluminat LED",
+    "Incalzitor electric",
   ];
 
-  const distributorOptions = ['E.ON', 'Enel', 'Electrica', 'CEZ', 'Restart Energy'];
-
   const users = [
-    { username: 'user1', password: 'user1' },
-    { username: 'user2', password: 'user2' },
-    { username: 'user3', password: 'user3' },
+    { username: "user1", password: "user1" },
+    { username: "user2", password: "user2" },
+    { username: "user3", password: "user3" },
   ];
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const match = users.find(
-      (user) => user.username === username && user.password === password
+      (user) => user.username === username && user.password === password,
     );
 
     if (match) {
-      setStatus({ type: 'success', message: `Welcome back, ${match.username}.` });
+      setStatus({
+        type: "success",
+        message: `Welcome back, ${match.username}.`,
+      });
       setIsAuthed(true);
-      setActiveView('dashboard');
+      setActiveView("dashboard");
     } else {
-      setStatus({ type: 'error', message: 'Invalid username or password.' });
+      setStatus({ type: "error", message: "Invalid username or password." });
     }
   };
 
   const handleReset = () => {
-    setUsername('');
-    setPassword('');
-    setStatus({ type: 'idle', message: '' });
+    setUsername("");
+    setPassword("");
+    setStatus({ type: "idle", message: "" });
     setIsAuthed(false);
-    setActiveView('dashboard');
+    setActiveView("dashboard");
     setPlanProducers([]);
     setPlanConsumers([]);
     setPlanResult(null);
   };
 
   const handleAddProducer = () => {
-    setPlanProducers((items) => [
-      ...items,
-      {
-        type: planProducer,
-        count: Number(planProducerCount),
-        power: Number(planProducerPower),
-      },
-    ]);
+    const newItem = {
+      type: planProducer,
+      count: Number(planProducerCount),
+      power: Number(planProducerPower),
+    };
+
+    setPlanProducers((items) => {
+      const matchIndex = items.findIndex(
+        (item) => item.type === newItem.type && item.power === newItem.power,
+      );
+      if (matchIndex === -1) return [...items, newItem];
+      return items.map((item, index) =>
+        index === matchIndex
+          ? { ...item, count: item.count + newItem.count }
+          : item,
+      );
+    });
   };
 
   const handleAddConsumer = () => {
-    setPlanConsumers((items) => [
-      ...items,
-      {
-        type: planConsumer,
-        count: Number(planConsumerCount),
-        power: Number(planConsumerPower),
-      },
-    ]);
+    const newItem = {
+      type: planConsumer,
+      count: Number(planConsumerCount),
+      power: Number(planConsumerPower),
+    };
+
+    setPlanConsumers((items) => {
+      const matchIndex = items.findIndex(
+        (item) => item.type === newItem.type && item.power === newItem.power,
+      );
+      if (matchIndex === -1) return [...items, newItem];
+      return items.map((item, index) =>
+        index === matchIndex
+          ? { ...item, count: item.count + newItem.count }
+          : item,
+      );
+    });
   };
 
   const getPlanProducers = () => {
@@ -123,18 +145,24 @@ function App() {
     ];
   };
 
-  const handleCalculatePlan = () => {
+  const handleCalculatePlan = (nextDistributor) => {
     const totalProducerPower = planProducers.reduce(
       (sum, item) => sum + item.count * item.power,
-      0
+      0,
     );
     const totalConsumerPower = planConsumers.reduce(
       (sum, item) => sum + item.count * item.power,
-      0
+      0,
     );
     const produced = Math.max(0.5, totalProducerPower * 1.8);
     const consumed = Math.max(0.4, totalConsumerPower * 1.4);
-    const cost = Math.max(250, Math.round(consumed * 1000));
+    const currentRate =
+      distributorRates.find(
+        (item) => item.name === (nextDistributor || planDistributor),
+      )?.price ??
+      distributorRates[0]?.price ??
+      1;
+    const cost = Math.max(250, Math.round(consumed * 1000 * currentRate));
 
     setPlanResult({
       cost,
@@ -148,11 +176,11 @@ function App() {
     const activeConsumers = consumers.filter((item) => item.isOn);
     const totalProducerPower = activeProducers.reduce(
       (sum, item) => sum + item.count * item.power,
-      0
+      0,
     );
     const totalConsumerPower = activeConsumers.reduce(
       (sum, item) => sum + item.count * item.power,
-      0
+      0,
     );
     const produced = Math.max(0.5, totalProducerPower * 1.8);
     const consumed = Math.max(0.4, totalConsumerPower * 1.4);
@@ -193,7 +221,7 @@ function App() {
       const updated = {
         ...current,
         [group]: current[group].map((item, itemIndex) =>
-          itemIndex === index ? { ...item, isOn: !item.isOn } : item
+          itemIndex === index ? { ...item, isOn: !item.isOn } : item,
         ),
       };
 
@@ -205,13 +233,13 @@ function App() {
   };
 
   const handleResetPlan = () => {
-    setPlanProducer('Panouri solare');
+    setPlanProducer("Panouri solare");
     setPlanProducerCount(4);
     setPlanProducerPower(1.5);
-    setPlanConsumer('Frigider');
+    setPlanConsumer("Frigider");
     setPlanConsumerCount(1);
     setPlanConsumerPower(0.3);
-    setPlanDistributor('E.ON');
+    setPlanDistributor(distributorRates[0]?.name || "E.ON");
     setPlanProducers([]);
     setPlanConsumers([]);
     setPlanResult(null);
@@ -222,13 +250,13 @@ function App() {
     const years = Math.floor(roundedMonths / 12);
     const remainingMonths = roundedMonths % 12;
     if (years === 0) {
-      return `~ ${remainingMonths} ${remainingMonths === 1 ? 'luna' : 'luni'}`;
+      return `~ ${remainingMonths} ${remainingMonths === 1 ? "luna" : "luni"}`;
     }
     if (remainingMonths === 0) {
-      return `~ ${years} ${years === 1 ? 'an' : 'ani'}`;
+      return `~ ${years} ${years === 1 ? "an" : "ani"}`;
     }
-    return `~ ${years} ${years === 1 ? 'an' : 'ani'} si ${remainingMonths} ${
-      remainingMonths === 1 ? 'luna' : 'luni'
+    return `~ ${years} ${years === 1 ? "an" : "ani"} si ${remainingMonths} ${
+      remainingMonths === 1 ? "luna" : "luni"
     }`;
   };
 
@@ -241,8 +269,8 @@ function App() {
 
     if (monthlySavings <= 0 || totalInvestment <= 0) {
       setRoiResult({
-        payback: 'Completeaza costurile si economiile lunare.',
-        tenYearSavings: 'Completeaza campurile pentru a estima economiile.',
+        payback: "Completeaza costurile si economiile lunare.",
+        tenYearSavings: "Completeaza campurile pentru a estima economiile.",
       });
       return;
     }
@@ -258,10 +286,10 @@ function App() {
 
   const handleExportRoiReport = async () => {
     if (!roiResult) {
-      window.alert('Calculeaza ROI inainte de export.');
+      window.alert("Calculeaza ROI inainte de export.");
       return;
     }
-    const confirmed = window.confirm('Sunteti de acord?');
+    const confirmed = window.confirm("Sunteti de acord?");
     if (!confirmed) return;
     await exportRoiPdf({
       roiInstallCost,
@@ -276,7 +304,8 @@ function App() {
   const planProps = {
     producerOptions,
     consumerOptions,
-    distributorOptions,
+    distributorOptions: distributorRates.map((item) => item.name),
+    distributorRates,
     planProducer,
     planProducerCount,
     planProducerPower,
@@ -311,7 +340,7 @@ function App() {
     producers: getPlanProducers(),
     consumers: getPlanConsumers(),
     distributor: planDistributor,
-    onShowAppInfo: () => setActiveView('info-aplicatie'),
+    onShowAppInfo: () => setActiveView("info-aplicatie"),
   };
 
   const calculatorProps = {
@@ -332,7 +361,7 @@ function App() {
 
   return (
     <div className="App">
-      <main className={isAuthed ? 'dashboard-shell' : 'login-shell'}>
+      <main className={isAuthed ? "dashboard-shell" : "login-shell"}>
         {isAuthed ? (
           <DashboardPage
             activeView={activeView}

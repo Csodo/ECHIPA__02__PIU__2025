@@ -2,6 +2,7 @@ function PlanificareView({
   producerOptions,
   consumerOptions,
   distributorOptions,
+  distributorRates,
   planProducer,
   planProducerCount,
   planProducerPower,
@@ -110,10 +111,17 @@ function PlanificareView({
           <h3>Distribuitor curent</h3>
           <label>
             Distribuitor
-            <select value={planDistributor} onChange={(event) => onPlanDistributorChange(event.target.value)}>
-              {distributorOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+            <select
+              value={planDistributor}
+              onChange={(event) => {
+                const value = event.target.value;
+                onPlanDistributorChange(value);
+                onCalculatePlan(value);
+              }}
+            >
+              {distributorRates.map((option) => (
+                <option key={option.name} value={option.name}>
+                  {option.name} (pret: {option.price} lei/kWh)
                 </option>
               ))}
             </select>
