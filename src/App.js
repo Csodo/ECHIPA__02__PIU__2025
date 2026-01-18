@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './styles/global.css';
 import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
+import { exportRoiPdf } from './pages/Calculator/exportRoiPdf';
 
 function App() {
   const [username, setUsername] = useState('');
@@ -241,7 +242,7 @@ function App() {
     if (monthlySavings <= 0 || totalInvestment <= 0) {
       setRoiResult({
         payback: 'Completeaza costurile si economiile lunare.',
-        tenYearSavings: 'ƒ?"',
+        tenYearSavings: 'Completeaza campurile pentru a estima economiile.',
       });
       return;
     }
@@ -252,6 +253,23 @@ function App() {
     setRoiResult({
       payback: formatPayback(monthsToRecover),
       tenYearSavings: `~ ${Math.max(0, Math.round(tenYearSavings))} lei`,
+    });
+  };
+
+  const handleExportRoiReport = async () => {
+    if (!roiResult) {
+      window.alert('Calculeaza ROI inainte de export.');
+      return;
+    }
+    const confirmed = window.confirm('Sunteti de acord?');
+    if (!confirmed) return;
+    await exportRoiPdf({
+      roiInstallCost,
+      roiPanelCost,
+      roiBatteryCost,
+      roiMonthlySavings,
+      roiMonthlyProduction,
+      roiResult,
     });
   };
 
@@ -309,6 +327,7 @@ function App() {
     onChangeMonthlySavings: setRoiMonthlySavings,
     onChangeMonthlyProduction: setRoiMonthlyProduction,
     onCalculate: handleCalculateRoi,
+    onExportPdf: handleExportRoiReport,
   };
 
   return (
