@@ -69,14 +69,14 @@ function MonitorizareView({ monitorPlan, onRefresh, onToggleItem }) {
                     />
                     <span className="checkmark" aria-hidden="true" />
                   </label>
-                  <span>{item.type}</span>
-                  <span>{item.count}</span>
-                  <span>{(item.count * item.power).toFixed(2)} kWh</span>
-                  <span>{(item.count * item.power * 1.1).toFixed(2)} kWh/h</span>
-                </div>
-              ))}
-            </div>
+                <span>{item.type}</span>
+                <span>{item.count}</span>
+                <span>{(item.count * item.power).toFixed(2)} kWh</span>
+                <span>{(item.count * item.power).toFixed(2)} kWh/h</span>
+              </div>
+            ))}
           </div>
+        </div>
 
           <div className="monitor-section">
             <h3>Consumatori</h3>

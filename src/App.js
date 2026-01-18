@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './styles/global.css';
 import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
@@ -19,7 +19,12 @@ function App() {
   const [planDistributor, setPlanDistributor] = useState(distributorRates[0]?.name || 'E.ON');
   const [planProducers, setPlanProducers] = useState([]);
   const [planConsumers, setPlanConsumers] = useState([]);
+  const [planBatteryType, setPlanBatteryType] = useState('Baterie Li-Ion');
+  const [planBatteryCount, setPlanBatteryCount] = useState(0);
+  const [planBatteryCapacity, setPlanBatteryCapacity] = useState(5);
+  const [planBatteries, setPlanBatteries] = useState([]);
   const [planResult, setPlanResult] = useState(null);
+  const [planNotice, setPlanNotice] = useState('');
   const [monitorPlan, setMonitorPlan] = useState(null);
   const [roiInstallCost, setRoiInstallCost] = useState('');
   const [roiPanelCost, setRoiPanelCost] = useState('');
@@ -44,6 +49,13 @@ function App() {
     'Iluminat LED',
     'Incalzitor electric',
   ];
+  const batteryOptions = ['Baterie Li-Ion', 'Baterie LFP', 'Baterie AGM'];
+
+  useEffect(() => {
+    if (!planNotice) return undefined;
+    const timer = setTimeout(() => setPlanNotice(''), 3000);
+    return () => clearTimeout(timer);
+  }, [planNotice]);
 
   const users = [
     { username: 'user1', password: 'user1' },
@@ -74,7 +86,12 @@ function App() {
     setActiveView('dashboard');
     setPlanProducers([]);
     setPlanConsumers([]);
+    setPlanBatteries([]);
+    setPlanBatteryType('Baterie Li-Ion');
+    setPlanBatteryCount(0);
+    setPlanBatteryCapacity(5);
     setPlanResult(null);
+    setPlanNotice('');
   };
 
   const handleAddProducer = () => {
@@ -113,26 +130,23 @@ function App() {
     });
   };
 
-  const getPlanProducers = () => {
-    if (planProducers.length) return planProducers;
-    return [
-      {
-        type: planProducer,
-        count: Number(planProducerCount),
-        power: Number(planProducerPower),
-      },
-    ];
-  };
+  const handleAddBattery = () => {
+    const newItem = {
+      type: planBatteryType,
+      count: Number(planBatteryCount),
+      capacity: Number(planBatteryCapacity),
+    };
+    if (!newItem.count || newItem.capacity <= 0) return;
 
-  const getPlanConsumers = () => {
-    if (planConsumers.length) return planConsumers;
-    return [
-      {
-        type: planConsumer,
-        count: Number(planConsumerCount),
-        power: Number(planConsumerPower),
-      },
-    ];
+    setPlanBatteries((items) => {
+      const matchIndex = items.findIndex(
+        (item) => item.type === newItem.type && item.capacity === newItem.capacity
+      );
+      if (matchIndex === -1) return [...items, newItem];
+      return items.map((item, index) =>
+        index === matchIndex ? { ...item, count: item.count + newItem.count } : item
+      );
+    });
   };
 
   const handleCalculatePlan = (nextDistributor) => {
@@ -144,14 +158,14 @@ function App() {
       (sum, item) => sum + item.count * item.power,
       0
     );
-    const produced = Math.max(0.5, totalProducerPower * 1.8);
-    const consumed = Math.max(0.4, totalConsumerPower * 1.4);
+    const produced = Math.max(0, totalProducerPower);
+    const consumed = Math.max(0, totalConsumerPower);
     const currentRate =
       distributorRates.find((item) => item.name === (nextDistributor || planDistributor))
         ?.price ??
       distributorRates[0]?.price ??
       1;
-    const cost = Math.max(250, Math.round(consumed * 1000 * currentRate));
+    const cost = Math.max(0, Math.round(consumed * 1000 * currentRate));
 
     setPlanResult({
       cost,
@@ -160,7 +174,7 @@ function App() {
     });
   };
 
-  const buildMonitorMetrics = (producers, consumers) => {
+  const buildMonitorMetrics = (producers, consumers, batteryCapacityTotal = 0) => {
     const activeProducers = producers.filter((item) => item.isOn);
     const activeConsumers = consumers.filter((item) => item.isOn);
     const totalProducerPower = activeProducers.reduce(
@@ -171,27 +185,44 @@ function App() {
       (sum, item) => sum + item.count * item.power,
       0
     );
-    const produced = Math.max(0.5, totalProducerPower * 1.8);
-    const consumed = Math.max(0.4, totalConsumerPower * 1.4);
+    const produced = Math.max(0, totalProducerPower);
+    const consumed = Math.max(0, totalConsumerPower);
     const surplus = Math.max(0, produced - consumed);
+    const batteryStorage = batteryCapacityTotal
+      ? Math.min(batteryCapacityTotal, surplus * 0.6)
+      : 0;
+    const gridDelivered = Math.max(0, surplus - batteryStorage);
 
     return {
       productionCurrent: produced.toFixed(2),
       consumptionCurrent: consumed.toFixed(2),
-      batteryStorage: (surplus * 0.6).toFixed(2),
-      gridDelivered: (surplus * 0.4).toFixed(2),
+      batteryStorage: batteryStorage.toFixed(2),
+      gridDelivered: gridDelivered.toFixed(2),
     };
   };
 
   const handleImportPlan = () => {
     const producers = planProducers.map((item) => ({ ...item, isOn: true }));
     const consumers = planConsumers.map((item) => ({ ...item, isOn: true }));
+    const batteries =
+      planBatteries.length > 0
+        ? planBatteries
+        : planBatteryCount && planBatteryCapacity > 0
+          ? [{ type: planBatteryType, count: planBatteryCount, capacity: planBatteryCapacity }]
+          : [];
+    const batteryCapacityTotal = batteries.reduce(
+      (sum, item) => sum + item.count * item.capacity,
+      0
+    );
 
     setMonitorPlan({
       producers,
       consumers,
-      metrics: buildMonitorMetrics(producers, consumers),
+      batteries,
+      batteryCapacityTotal,
+      metrics: buildMonitorMetrics(producers, consumers, batteryCapacityTotal),
     });
+    setPlanNotice('Plan importat in monitorizare.');
   };
 
   const handleRefreshMonitor = () => {
@@ -199,7 +230,11 @@ function App() {
       if (!current) return current;
       return {
         ...current,
-        metrics: buildMonitorMetrics(current.producers, current.consumers),
+        metrics: buildMonitorMetrics(
+          current.producers,
+          current.consumers,
+          current.batteryCapacityTotal || 0
+        ),
       };
     });
   };
@@ -216,7 +251,11 @@ function App() {
 
       return {
         ...updated,
-        metrics: buildMonitorMetrics(updated.producers, updated.consumers),
+        metrics: buildMonitorMetrics(
+          updated.producers,
+          updated.consumers,
+          updated.batteryCapacityTotal || 0
+        ),
       };
     });
   };
@@ -231,6 +270,10 @@ function App() {
     setPlanDistributor(distributorRates[0]?.name || 'E.ON');
     setPlanProducers([]);
     setPlanConsumers([]);
+    setPlanBatteries([]);
+    setPlanBatteryType('Baterie Li-Ion');
+    setPlanBatteryCount(0);
+    setPlanBatteryCapacity(5);
     setPlanResult(null);
   };
 
@@ -276,6 +319,7 @@ function App() {
   const planProps = {
     producerOptions,
     consumerOptions,
+    batteryOptions,
     distributorOptions: distributorRates.map((item) => item.name),
     distributorRates,
     planProducer,
@@ -287,7 +331,12 @@ function App() {
     planDistributor,
     planProducers,
     planConsumers,
+    planBatteryType,
+    planBatteryCount,
+    planBatteryCapacity,
+    planBatteries,
     planResult,
+    planNotice,
     onPlanProducerChange: setPlanProducer,
     onPlanProducerCountChange: setPlanProducerCount,
     onPlanProducerPowerChange: setPlanProducerPower,
@@ -295,8 +344,12 @@ function App() {
     onPlanConsumerCountChange: setPlanConsumerCount,
     onPlanConsumerPowerChange: setPlanConsumerPower,
     onPlanDistributorChange: setPlanDistributor,
+    onPlanBatteryTypeChange: setPlanBatteryType,
+    onPlanBatteryCountChange: setPlanBatteryCount,
+    onPlanBatteryCapacityChange: setPlanBatteryCapacity,
     onAddProducer: handleAddProducer,
     onAddConsumer: handleAddConsumer,
+    onAddBattery: handleAddBattery,
     onCalculatePlan: handleCalculatePlan,
     onImportPlan: handleImportPlan,
     onResetPlan: handleResetPlan,
@@ -309,8 +362,9 @@ function App() {
   };
 
   const infoProps = {
-    producers: getPlanProducers(),
-    consumers: getPlanConsumers(),
+    producers: planProducers,
+    consumers: planConsumers,
+    batteries: planBatteries,
     distributor: planDistributor,
     onShowAppInfo: () => setActiveView('info-aplicatie'),
   };

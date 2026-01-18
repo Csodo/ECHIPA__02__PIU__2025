@@ -1,6 +1,7 @@
 function PlanificareView({
   producerOptions,
   consumerOptions,
+  batteryOptions,
   distributorOptions,
   distributorRates,
   planProducer,
@@ -12,7 +13,12 @@ function PlanificareView({
   planDistributor,
   planProducers,
   planConsumers,
+  planBatteryType,
+  planBatteryCount,
+  planBatteryCapacity,
+  planBatteries,
   planResult,
+  planNotice,
   onPlanProducerChange,
   onPlanProducerCountChange,
   onPlanProducerPowerChange,
@@ -20,12 +26,21 @@ function PlanificareView({
   onPlanConsumerCountChange,
   onPlanConsumerPowerChange,
   onPlanDistributorChange,
+  onPlanBatteryTypeChange,
+  onPlanBatteryCountChange,
+  onPlanBatteryCapacityChange,
   onAddProducer,
   onAddConsumer,
+  onAddBattery,
   onCalculatePlan,
   onImportPlan,
   onResetPlan,
 }) {
+  const totalBatteryCapacity = planBatteries.reduce(
+    (sum, item) => sum + item.count * item.capacity,
+    0
+  );
+
   return (
     <div className="plan-layout">
       <section className="plan-form">
@@ -140,6 +155,8 @@ function PlanificareView({
           </button>
         </div>
 
+        {planNotice && <div className="plan-notice">{planNotice}</div>}
+
         <div className="plan-results">
           <h3>Rezultate</h3>
           {planResult ? (
@@ -182,6 +199,23 @@ function PlanificareView({
           ) : (
             <p>Nu exista consumatori adaugati.</p>
           )}
+        </div>
+        <div>
+          <h3>Baterii</h3>
+          {planBatteries.length ? (
+            <ul>
+              {planBatteries.map((item, index) => (
+                <li key={`${item.type}-${item.capacity}-${index}`}>
+                  {item.type} x{item.count} ({item.capacity} kWh fiecare)
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Nu exista baterii adaugate.</p>
+          )}
+          <p className="plan-hint">
+            Capacitate totala: {Math.round(totalBatteryCapacity * 100) / 100} kWh
+          </p>
         </div>
       </aside>
     </div>

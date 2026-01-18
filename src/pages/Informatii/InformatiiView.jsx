@@ -5,14 +5,19 @@ const formatConsumerSummary = (items) => {
   return `${unique.slice(0, 3).join(', ')} etc.`;
 };
 
-function InformatiiView({ producers, consumers, distributor, onShowAppInfo }) {
+function InformatiiView({ producers = [], consumers = [], batteries = [], distributor, onShowAppInfo }) {
   const totalProducerPower = producers.reduce((sum, item) => sum + item.count * item.power, 0);
   const totalProducerCount = producers.reduce((sum, item) => sum + item.count, 0);
   const consumerCount = consumers.reduce((sum, item) => sum + item.count, 0);
   const producerTypes = [...new Set(producers.map((item) => item.type.toLowerCase()))];
-  const batteryLevel = Math.min(95, Math.max(45, Math.round(totalProducerPower * 12)));
   const producerTypeLabel =
-    producerTypes.length === 1 ? producerTypes[0] : `(${producerTypes.join(', ')})`;
+    totalProducerCount === 0
+      ? '0'
+      : producerTypes.length === 1
+      ? producerTypes[0]
+      : `(${producerTypes.join(', ')})`;
+  const consumerSummary = consumerCount === 0 ? '0' : `${consumerCount} (${formatConsumerSummary(consumers)})`;
+  const batteryCapacityTotal = batteries.reduce((sum, item) => sum + item.count * item.capacity, 0);
 
   return (
     <div className="info-layout">
@@ -25,9 +30,7 @@ function InformatiiView({ producers, consumers, distributor, onShowAppInfo }) {
         </div>
         <div className="info-row">
           <span>Consumatori principali:</span>
-          <strong>
-            {consumerCount} ({formatConsumerSummary(consumers)})
-          </strong>
+          <strong>{consumerSummary}</strong>
         </div>
         <div className="info-row">
           <span>Capacitate totala sistem:</span>
@@ -35,7 +38,7 @@ function InformatiiView({ producers, consumers, distributor, onShowAppInfo }) {
         </div>
         <div className="info-row">
           <span>Stocare in baterie:</span>
-          <strong>{batteryLevel}%</strong>
+          <strong>{batteryCapacityTotal.toFixed(2)} kWh</strong>
         </div>
         <div className="info-row">
           <span>Ultima mentenanta:</span>
