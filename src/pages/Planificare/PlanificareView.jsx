@@ -1,5 +1,7 @@
 function PlanificareView({
   consumerOptions,
+  batteryOptions,
+  distributorOptions,
   distributorRates,
   solarPanels,
   solarSuggestion,
@@ -11,20 +13,37 @@ function PlanificareView({
   planDistributor,
   planProducers,
   planConsumers,
+  planBatteryType,
+  planBatteryCount,
+  planBatteryCapacity,
+  planBatteries,
   planResult,
+  planNotice,
+  onPlanProducerChange,
+  onPlanProducerCountChange,
+  onPlanProducerPowerChange,
   onPlanConsumerChange,
   onPlanConsumerCountChange,
   onPlanConsumerPowerChange,
   onPlanDistributorChange,
+  onPlanBatteryTypeChange,
+  onPlanBatteryCountChange,
+  onPlanBatteryCapacityChange,
+  onAddProducer,
   onSelectPanel,
   onPanelCountChange,
   onApplySuggestedPanels,
   onAddSelectedPanel,
   onAddConsumer,
+  onAddBattery,
   onCalculatePlan,
   onImportPlan,
   onResetPlan,
 }) {
+  const totalBatteryCapacity = planBatteries.reduce(
+    (sum, item) => sum + item.count * item.capacity,
+    0
+  );
   const selectedPanel = solarPanels.find((panel) => panel.id === selectedPanelId);
   const suggestedPanels = solarSuggestion?.panels ?? [];
   const suggestionLabel = suggestedPanels
@@ -179,6 +198,8 @@ function PlanificareView({
           </button>
         </div>
 
+        {planNotice && <div className="plan-notice">{planNotice}</div>}
+
         <div className="plan-results">
           <h3>Rezultate</h3>
           {planResult ? (
@@ -222,6 +243,23 @@ function PlanificareView({
           ) : (
             <p>Nu exista consumatori adaugati.</p>
           )}
+        </div>
+        <div>
+          <h3>Baterii</h3>
+          {planBatteries.length ? (
+            <ul>
+              {planBatteries.map((item, index) => (
+                <li key={`${item.type}-${item.capacity}-${index}`}>
+                  {item.type} x{item.count} ({item.capacity} kWh fiecare)
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Nu exista baterii adaugate.</p>
+          )}
+          <p className="plan-hint">
+            Capacitate totala: {Math.round(totalBatteryCapacity * 100) / 100} kWh
+          </p>
         </div>
       </aside>
     </div>
