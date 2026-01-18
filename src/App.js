@@ -79,25 +79,39 @@ function App() {
   };
 
   const handleAddProducer = () => {
-    setPlanProducers((items) => [
-      ...items,
-      {
-        type: planProducer,
-        count: Number(planProducerCount),
-        power: Number(planProducerPower),
-      },
-    ]);
+    const newItem = {
+      type: planProducer,
+      count: Number(planProducerCount),
+      power: Number(planProducerPower),
+    };
+
+    setPlanProducers((items) => {
+      const matchIndex = items.findIndex(
+        (item) => item.type === newItem.type && item.power === newItem.power
+      );
+      if (matchIndex === -1) return [...items, newItem];
+      return items.map((item, index) =>
+        index === matchIndex ? { ...item, count: item.count + newItem.count } : item
+      );
+    });
   };
 
   const handleAddConsumer = () => {
-    setPlanConsumers((items) => [
-      ...items,
-      {
-        type: planConsumer,
-        count: Number(planConsumerCount),
-        power: Number(planConsumerPower),
-      },
-    ]);
+    const newItem = {
+      type: planConsumer,
+      count: Number(planConsumerCount),
+      power: Number(planConsumerPower),
+    };
+
+    setPlanConsumers((items) => {
+      const matchIndex = items.findIndex(
+        (item) => item.type === newItem.type && item.power === newItem.power
+      );
+      if (matchIndex === -1) return [...items, newItem];
+      return items.map((item, index) =>
+        index === matchIndex ? { ...item, count: item.count + newItem.count } : item
+      );
+    });
   };
 
   const getPlanProducers = () => {
