@@ -68,6 +68,22 @@
   box-shadow: 0 12px 24px rgba(227, 23, 47, 0.25);
 }
 
+.plan-offer button {
+  border-radius: 10px;
+  border: 1px solid rgba(227, 23, 47, 0.5);
+  background: rgba(227, 23, 47, 0.2);
+  color: var(--white);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px 14px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.plan-offer button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(227, 23, 47, 0.25);
+}
+
 .plan-actions {
   display: flex;
   gap: 12px;
@@ -99,6 +115,49 @@
 }
 
 .plan-results p {
+  margin: 0;
+  color: var(--gray-300);
+}
+
+.plan-offer {
+  display: grid;
+  gap: 16px;
+}
+
+.plan-offer-card,
+.plan-offer-picker {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 16px;
+  background: rgba(6, 6, 6, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-offer-card {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.plan-offer-title {
+  margin: 0 0 8px;
+  color: var(--gray-100);
+  font-weight: 600;
+}
+
+.plan-offer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  color: var(--gray-300);
+  font-size: 13px;
+}
+
+.plan-offer-empty {
   margin: 0;
   color: var(--gray-300);
 }
