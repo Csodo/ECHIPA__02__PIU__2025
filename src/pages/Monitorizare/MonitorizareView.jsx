@@ -28,13 +28,20 @@ function MonitorizareView({ monitorPlan, onToggleItem, onShowPrediction }) {
               <div className="monitor-stat">
                 <span>Stocare in baterie</span>
                 <span className="monitor-dots" aria-hidden="true" />
-                <strong>{monitorPlan.metrics.batteryStorage} kWh</strong>
+                <div className="monitor-stat-values">
+                  <strong>{monitorPlan.metrics.batteryStorage} kWh</strong>
+                </div>
               </div>
               <div className="monitor-stat">
-                <span>Energie livrata in retea</span>
+                <span>Energie in retea</span>
                 <span className="monitor-dots" aria-hidden="true" />
-                <strong>{monitorPlan.metrics.gridDelivered} kWh</strong>
+                <div className="monitor-stat-values">
+                  <strong>{monitorPlan.metrics.gridDelivered} kWh</strong>
+                </div>
               </div>
+                  {monitorPlan.metrics.flowExplanation && monitorPlan.metrics.gridLabel && (
+                    <span className="monitor-sub">{monitorPlan.metrics.flowExplanation}</span>
+                  )}
             </div>
           </div>
           <div className="monitor-actions">
@@ -120,6 +127,40 @@ function MonitorizareView({ monitorPlan, onToggleItem, onShowPrediction }) {
               })}
             </div>
           </div>
+
+          {monitorPlan.batteries?.length > 0 && (
+            <div className="monitor-section">
+              <h3 id="monitor-batteries-heading">Baterii</h3>
+              <div
+                className="monitor-table monitor-batteries"
+                role="table"
+                aria-labelledby="monitor-batteries-heading"
+              >
+                <div className="monitor-row monitor-head" role="row">
+                  <span role="columnheader">On/Off</span>
+                  <span role="columnheader">Tip baterie</span>
+                  <span role="columnheader">Cantitate</span>
+                  <span role="columnheader">Capacitate (kWh)</span>
+                </div>
+                {monitorPlan.batteries.map((item, index) => (
+                  <div className="monitor-row" key={`${item.type}-${index}`} role="row">
+                    <label className="monitor-toggle">
+                      <input
+                        type="checkbox"
+                        checked={item.isOn}
+                        onChange={() => onToggleItem('batteries', index)}
+                        aria-label={`Comuta bateria ${item.type}`}
+                      />
+                      <span className="checkmark" aria-hidden="true" />
+                    </label>
+                    <span role="cell">{item.type}</span>
+                    <span role="cell">{item.count}</span>
+                    <span role="cell">{(item.count * item.capacity).toFixed(2)} kWh</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <div className="dashboard-placeholder" role="status" aria-live="polite">

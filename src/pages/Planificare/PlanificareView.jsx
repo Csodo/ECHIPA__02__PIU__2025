@@ -1,12 +1,16 @@
 function PlanificareView({
   consumerOptions,
   batteryOptions,
+  batteryCatalog,
   distributorOptions,
   distributorRates,
   solarPanels,
   solarSuggestion,
+  batterySuggestion,
   selectedPanelId,
   selectedPanelCount,
+  selectedBatteryId,
+  selectedBatteryCount,
   planConsumer,
   planConsumerCount,
   planConsumerPower,
@@ -34,6 +38,10 @@ function PlanificareView({
   onApplySuggestedPanels,
   onAddSelectedPanel,
   onAddConsumer,
+  onSelectBattery,
+  onBatteryCountChange,
+  onApplySuggestedBatteries,
+  onAddSelectedBattery,
   onAddBattery,
   onCalculatePlan,
   onResetPlan,
@@ -159,6 +167,61 @@ function PlanificareView({
             </div>
             <button type="button" onClick={onAddSelectedPanel}>
               Adauga selectie
+            </button>
+          </div>
+        </div>
+
+        <div className="plan-block plan-offer" aria-label="Recomandari baterii">
+          <h3>Oferta baterii</h3>
+          {batterySuggestion && batterySuggestion.batteries.length ? (
+            <div className="plan-offer-card" role="status" aria-live="polite">
+              <div>
+                <p className="plan-offer-title">Recomandare pe baza surplusului</p>
+                <strong>
+                  {batterySuggestion.batteries.map((b) => `${b.name} x${b.count}`).join(' + ')}
+                </strong>
+                <div className="plan-offer-meta">
+                  <span>Surplus tinta: {batterySuggestion.targetStorage.toFixed(2)} kWh</span>
+                  <span>Capacitate totala: {batterySuggestion.totalCapacity.toFixed(2)} kWh</span>
+                  <span>Diferenta: {batterySuggestion.diff.toFixed(2)} kWh</span>
+                  <span>Cost estimat: {batterySuggestion.totalPrice.toLocaleString('ro-RO')} lei</span>
+                </div>
+              </div>
+              <button type="button" onClick={onApplySuggestedBatteries}>
+                Adauga recomandarea
+              </button>
+            </div>
+          ) : (
+            <p className="plan-offer-empty">
+              Recomandam baterii doar daca exista productie mai mare decat consumul.
+            </p>
+          )}
+
+          <div className="plan-offer-picker">
+            <p className="plan-offer-title">Alege manual</p>
+            <div className="plan-row">
+              <label>
+                Model baterie
+                <select value={selectedBatteryId} onChange={(e) => onSelectBattery(e.target.value)}>
+                  {batteryCatalog.map((battery) => (
+                    <option key={battery.id} value={battery.id}>
+                      {battery.name} ({battery.capacity} kWh, {battery.price} lei)
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Numar baterii
+                <input
+                  type="number"
+                  min="1"
+                  value={selectedBatteryCount}
+                  onChange={(event) => onBatteryCountChange(event.target.value)}
+                />
+              </label>
+            </div>
+            <button type="button" onClick={onAddSelectedBattery}>
+              Adauga baterie
             </button>
           </div>
         </div>

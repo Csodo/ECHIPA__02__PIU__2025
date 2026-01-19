@@ -8,6 +8,24 @@ function PredictieView({ predictionData, weatherUpdatedAt, onBackToMonitor }) {
   const formatEnergy = (value) =>
     Number.isFinite(value) ? `${value.toFixed(2)} kWh` : '-';
 
+  const buildAdvice = (item) => {
+    if (!item || !Number.isFinite(item.production) || !Number.isFinite(item.consumption)) {
+      return 'Adauga producatori si consumatori pentru a vedea o estimare utila.';
+    }
+    const delta = Number(item.production - item.consumption);
+    if (delta > 0.01) {
+      return `Surplus estimat de ${delta.toFixed(
+        2,
+      )} kWh: incarca bateriile si trimite restul in retea.`;
+    }
+    if (delta < -0.01) {
+      return `Deficit estimat de ${Math.abs(delta).toFixed(
+        2,
+      )} kWh: vei folosi bateriile, iar diferenta din retea.`;
+    }
+    return 'Productia si consumul sunt echilibrate pe intervalul selectat.';
+  };
+
   const formatUpdatedAt = (value) => {
     if (!value) return '-';
     const date = new Date(value);
@@ -55,6 +73,7 @@ function PredictieView({ predictionData, weatherUpdatedAt, onBackToMonitor }) {
                     <span>Consum estimat</span>
                     <strong>{formatEnergy(item?.consumption)}</strong>
                   </div>
+                  <p className="predict-advice">{buildAdvice(item)}</p>
                 </div>
               );
             })}

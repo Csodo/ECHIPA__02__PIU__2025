@@ -69,6 +69,13 @@
   font-weight: 600;
 }
 
+.predict-advice {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.4;
+}
+
 .predict-note {
   margin: 0;
   font-size: 12px;

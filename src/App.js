@@ -6,6 +6,12 @@ import { distributorRates } from './config/distributors';
 import AssistantChat from './components/AssistantChat';
 import { exportRoiPdf } from './pages/Calculator/exportRoiPdf';
 
+const batteryCatalog = [
+  { id: 'li-5', name: 'Battery 5kWh Li-Ion', capacity: 5, price: 3200 },
+  { id: 'lfp-10', name: 'Battery 10kWh LFP', capacity: 10, price: 5700 },
+  { id: 'lfp-15', name: 'Battery 15kWh LFP Pro', capacity: 15, price: 8400 },
+];
+
 function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -47,6 +53,8 @@ function App() {
   const [roiResult, setRoiResult] = useState(null);
   const [selectedPanelId, setSelectedPanelId] = useState('solaris-320');
   const [selectedPanelCount, setSelectedPanelCount] = useState(4);
+  const [selectedBatteryId, setSelectedBatteryId] = useState(batteryCatalog[0].id);
+  const [selectedBatteryCount, setSelectedBatteryCount] = useState(1);
 
   const producerOptions = [
     'Panouri solare',
@@ -175,6 +183,43 @@ function App() {
     });
   };
 
+  const handleAddBatteryById = (batteryId, countValue) => {
+    const model = batteryCatalog.find((item) => item.id === batteryId);
+    if (!model) return;
+    const count = Math.max(1, Number(countValue) || 1);
+    const newItem = {
+      type: model.name,
+      count,
+      capacity: model.capacity,
+      price: model.price,
+    };
+
+    setPlanBatteries((items) => {
+      const matchIndex = items.findIndex(
+        (item) => item.type === newItem.type && item.capacity === newItem.capacity
+      );
+      if (matchIndex === -1) return [...items, newItem];
+      return items.map((item, index) =>
+        index === matchIndex ? { ...item, count: item.count + newItem.count } : item
+      );
+    });
+  };
+
+  const handleBatteryTypeChange = (value) => {
+    setPlanBatteryType(value);
+    const match = batteryCatalog.find((item) => item.name === value);
+    if (match) setPlanBatteryCapacity(match.capacity);
+  };
+
+  const handleSelectBatteryId = (value) => {
+    setSelectedBatteryId(value);
+    const match = batteryCatalog.find((item) => item.id === value);
+    if (match) {
+      setPlanBatteryType(match.name);
+      setPlanBatteryCapacity(match.capacity);
+    }
+  };
+
   const handleCalculatePlan = (nextDistributor) => {
     const totalProducerPower = planProducers.reduce(
       (sum, item) => sum + item.count * item.power,
@@ -201,15 +246,32 @@ function App() {
     });
   };
 
-  const toLocalIsoHour = (date = new Date()) => {
-    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return `${local.toISOString().slice(0, 13)}:00`;
+  const toIsoHourAtTimezone = (timeZone, date = new Date()) => {
+    try {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timeZone || undefined,
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+      });
+      const parts = formatter.formatToParts(date).reduce((acc, part) => {
+        if (part.type !== 'literal') acc[part.type] = part.value;
+        return acc;
+      }, {});
+      return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:00`;
+    } catch (_err) {
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return `${local.toISOString().slice(0, 13)}:00`;
+    }
   };
 
   const getWeatherSnapshot = (data) => {
+    const timeZone = data?.timezone || null;
     const hourlyTimes = data?.hourly?.time || [];
     const hourlyCloud = data?.hourly?.cloud_cover || [];
-    const localHour = toLocalIsoHour();
+    const localHour = toIsoHourAtTimezone(timeZone);
     let index = hourlyTimes.indexOf(localHour);
     if (index === -1) {
       index = hourlyTimes.findIndex((time) => time.startsWith(localHour.slice(0, 13)));
@@ -219,15 +281,12 @@ function App() {
     const dailyTimes = data?.daily?.time || [];
     const dayIndex = dailyTimes.indexOf(localHour.slice(0, 10));
     let isDaytime = true;
-    if (
-      dayIndex >= 0 &&
-      data?.daily?.sunrise?.[dayIndex] &&
-      data?.daily?.sunset?.[dayIndex]
-    ) {
-      const sunrise = new Date(data.daily.sunrise[dayIndex]);
-      const sunset = new Date(data.daily.sunset[dayIndex]);
-      const now = new Date();
-      isDaytime = now >= sunrise && now <= sunset;
+    if (dayIndex >= 0) {
+      const sunrise = data?.daily?.sunrise?.[dayIndex];
+      const sunset = data?.daily?.sunset?.[dayIndex];
+      if (sunrise && sunset) {
+        isDaytime = localHour >= sunrise && localHour <= sunset;
+      }
     }
 
     return {
@@ -239,6 +298,7 @@ function App() {
       dailyTimes,
       dailySunrise: data?.daily?.sunrise || [],
       dailySunset: data?.daily?.sunset || [],
+      timezone: timeZone,
     };
   };
 
@@ -315,9 +375,10 @@ function App() {
     const dailyTimes = weather?.dailyTimes || [];
     const dailySunrise = weather?.dailySunrise || [];
     const dailySunset = weather?.dailySunset || [];
+    const timeZone = weather?.timezone || null;
     if (!hourlyTimes.length || !hourlyCloud.length) return null;
 
-    const startIso = toLocalIsoHour();
+    const startIso = toIsoHourAtTimezone(timeZone);
     let startIndex = hourlyTimes.indexOf(startIso);
     if (startIndex === -1) {
       startIndex = hourlyTimes.findIndex((time) => time.startsWith(startIso.slice(0, 13)));
@@ -333,10 +394,9 @@ function App() {
       const dayIndex = dailyTimes.indexOf(hourTime.slice(0, 10));
       let isDaytime = true;
       if (dayIndex >= 0 && dailySunrise[dayIndex] && dailySunset[dayIndex]) {
-        const sunrise = new Date(dailySunrise[dayIndex]);
-        const sunset = new Date(dailySunset[dayIndex]);
-        const target = new Date(hourTime);
-        isDaytime = target >= sunrise && target <= sunset;
+        const sunrise = dailySunrise[dayIndex];
+        const sunset = dailySunset[dayIndex];
+        isDaytime = hourTime >= sunrise && hourTime <= sunset;
       }
 
       let factor = 1;
@@ -422,7 +482,14 @@ function App() {
       };
     });
 
-  const buildMonitorMetrics = (producers, consumers, batteryCapacityTotal = 0) => {
+  const buildMonitorMetrics = (
+    producers,
+    consumers,
+    batteries = [],
+    previousCharge = 0,
+    capacityHint = 0
+  ) => {
+    const safeBatteries = Array.isArray(batteries) ? batteries : [];
     const totalProducerPower = producers.reduce(
       (sum, item) =>
         sum + (item.isOn ? item.currentPower ?? item.count * item.power : 0),
@@ -435,18 +502,119 @@ function App() {
     );
     const produced = Math.max(0, totalProducerPower);
     const consumed = Math.max(0, totalConsumerPower);
-    const surplus = Math.max(0, produced - consumed);
-    const batteryStorage = batteryCapacityTotal
-      ? Math.min(batteryCapacityTotal, surplus * 0.6)
-      : 0;
-    const gridDelivered = Math.max(0, surplus - batteryStorage);
+    const totalCapacityFromArray = Math.max(
+      0,
+      safeBatteries.reduce(
+        (sum, item) =>
+          sum + (Number(item.count) || 0) * (Number(item.capacity) || 0),
+        0
+      ) || 0
+    );
+    const totalCapacity = Math.max(totalCapacityFromArray, Number(capacityHint) || 0);
+    const activeCapacity = Math.max(
+      0,
+      safeBatteries
+        .filter((item) => item.isOn)
+        .reduce(
+          (sum, item) =>
+            sum + (Number(item.count) || 0) * (Number(item.capacity) || 0),
+          0
+        ) || 0
+    );
+    let currentCharge = Math.min(totalCapacity, Math.max(0, Number(previousCharge) || 0));
+    const flowNotes = [];
+    let gridExport = 0;
+    let gridImport = 0;
+    let batteryDelta = 0;
+
+    const hasBattery = totalCapacity > 0;
+    const batteriesConnected = activeCapacity > 0;
+
+    if (!hasBattery) {
+      if (produced > consumed) {
+        gridExport = produced - consumed;
+        flowNotes.push('Nu exista baterie, surplusul merge direct in retea.');
+      } else if (consumed > produced) {
+        gridImport = consumed - produced;
+        flowNotes.push('Nu exista baterie, deficitul este acoperit din retea.');
+      } else {
+        flowNotes.push('Nu exista baterie, productia acopera consumul.');
+      }
+    } else if (!batteriesConnected) {
+      if (produced > consumed) {
+        gridExport = produced - consumed;
+        flowNotes.push('Bateriile sunt oprite: surplusul merge direct in retea.');
+      } else if (consumed > produced) {
+        gridImport = consumed - produced;
+        flowNotes.push('Bateriile sunt oprite: deficitul este acoperit din retea.');
+      } else {
+        flowNotes.push('Bateriile sunt oprite: productia acopera consumul.');
+      }
+    } else {
+      if (produced > consumed) {
+        const surplus = produced - consumed;
+        const room = Math.max(0, activeCapacity - currentCharge);
+        const toBattery = Math.min(surplus, room);
+        currentCharge += toBattery;
+        batteryDelta = toBattery;
+        gridExport = surplus - toBattery;
+
+        if (room <= 0) {
+          flowNotes.push('Bateria este plina, surplusul merge in retea.');
+        } else {
+          flowNotes.push(
+            `Surplus de ${surplus.toFixed(2)} kWh: incarcam bateria cu ${toBattery.toFixed(2)} kWh.`
+          );
+          if (gridExport > 0) {
+            flowNotes.push(
+              `Dupa incarcare, ${gridExport.toFixed(2)} kWh merg in retea.`
+            );
+          }
+        }
+      } else if (consumed > produced) {
+        const deficit = consumed - produced;
+        const fromBattery = Math.min(deficit, currentCharge);
+        currentCharge -= fromBattery;
+        batteryDelta = -fromBattery;
+        gridImport = deficit - fromBattery;
+
+        if (fromBattery === 0) {
+          flowNotes.push(
+            `Bateria este goala, ${gridImport.toFixed(2)} kWh vin din retea.`
+          );
+        } else {
+          flowNotes.push(
+            `Deficit de ${deficit.toFixed(2)} kWh: descarcam bateria cu ${fromBattery.toFixed(2)} kWh.`
+          );
+          if (gridImport > 0) {
+            flowNotes.push(
+              `Restul de ${gridImport.toFixed(2)} kWh vine din retea.`
+            );
+          }
+        }
+      } else {
+        flowNotes.push('Productia acopera consumul, nu sunt transferuri suplimentare.');
+      }
+    }
+
+    const gridFlow = gridExport - gridImport; // >0 export, <0 import
+    const gridLabel =
+      gridFlow >= 0
+        ? `${gridFlow.toFixed(2)} kWh spre retea`
+        : `${gridFlow.toFixed(2)} kWh din retea`;
     const productionAlert = getProductionAlert(produced, producers, weatherData);
 
     return {
       productionCurrent: produced.toFixed(2),
       consumptionCurrent: consumed.toFixed(2),
-      batteryStorage: batteryStorage.toFixed(2),
-      gridDelivered: gridDelivered.toFixed(2),
+      batteryStorage: currentCharge.toFixed(2),
+      batteryDelta:
+        batteryDelta === 0
+          ? '0.00'
+          : `${batteryDelta > 0 ? '+' : ''}${batteryDelta.toFixed(2)}`,
+      gridDelivered: gridFlow.toFixed(2),
+      gridLabel,
+      flowExplanation: flowNotes.join(' '),
       productionAlert,
     };
   };
@@ -462,18 +630,35 @@ function App() {
     setMonitorPlan((current) => {
       const producers = buildLiveItems(planProducers, current?.producers, 'producers');
       const consumers = buildLiveItems(planConsumers, current?.consumers, 'consumers');
-      const batteries = planBatteries;
-      const batteryCapacityTotal = batteries.reduce(
+      const batteries = planBatteries.map((item) => {
+        const match = current?.batteries?.find(
+          (prev) => prev.type === item.type && prev.capacity === item.capacity
+        );
+        return { ...item, isOn: match?.isOn ?? true };
+      });
+      const totalCapacity = batteries.reduce(
         (sum, item) => sum + item.count * item.capacity,
         0,
+      );
+      const previousCharge = Math.min(
+        totalCapacity,
+        Math.max(0, current?.batteryCharge ?? 0)
+      );
+      const metrics = buildMonitorMetrics(
+        producers,
+        consumers,
+        batteries,
+        previousCharge,
+        totalCapacity
       );
 
       return {
         producers,
         consumers,
         batteries,
-        batteryCapacityTotal,
-        metrics: buildMonitorMetrics(producers, consumers, batteryCapacityTotal),
+        batteryCapacityTotal: totalCapacity,
+        batteryCharge: Number(metrics.batteryStorage) || 0,
+        metrics,
       };
     });
   }, [planProducers, planConsumers, planBatteries, weatherData]);
@@ -484,15 +669,19 @@ function App() {
         if (!current) return current;
         const producers = buildLiveItems(current.producers, current.producers, 'producers');
         const consumers = buildLiveItems(current.consumers, current.consumers, 'consumers');
+        const metrics = buildMonitorMetrics(
+          producers,
+          consumers,
+          current.batteries || [],
+          current.batteryCharge || 0,
+          current.batteryCapacityTotal || 0
+        );
         return {
           ...current,
           producers,
           consumers,
-          metrics: buildMonitorMetrics(
-            producers,
-            consumers,
-            current.batteryCapacityTotal || 0,
-          ),
+          batteryCharge: Number(metrics.batteryStorage) || 0,
+          metrics,
         };
       });
     }, LIVE_UPDATE_MS);
@@ -519,14 +708,18 @@ function App() {
         ...current,
         [group]: updatedItems,
       };
+      const metrics = buildMonitorMetrics(
+        updated.producers,
+        updated.consumers,
+        updated.batteries || [],
+        current?.batteryCharge || 0,
+        current?.batteryCapacityTotal || 0
+      );
 
       return {
         ...updated,
-        metrics: buildMonitorMetrics(
-          updated.producers,
-          updated.consumers,
-          updated.batteryCapacityTotal || 0
-        ),
+        batteryCharge: Number(metrics.batteryStorage) || 0,
+        metrics,
       };
     });
   };
@@ -657,6 +850,80 @@ function App() {
     });
   };
 
+  const getBatterySuggestion = (producers, consumers) => {
+    const totalProducerPower = producers.reduce((sum, item) => sum + item.count * item.power, 0);
+    const totalConsumerPower = consumers.reduce((sum, item) => sum + item.count * item.power, 0);
+    const netSurplus = totalProducerPower - totalConsumerPower;
+    if (netSurplus <= 0.2) return null; // nu recomandam daca nu exista surplus
+
+    const targetStorage = Math.min(30, Math.max(2, netSurplus * 4)); // ~4h de surplus
+    const maxCount = 6;
+
+    const combos = [];
+    const counts = new Array(batteryCatalog.length).fill(0);
+
+    const buildCombos = (index, totalCount, totalCapacity, totalPrice) => {
+      if (index === batteryCatalog.length) {
+        if (totalCount === 0) return;
+        combos.push({
+          counts: [...counts],
+          totalCount,
+          totalCapacity,
+          totalPrice,
+          diff: Math.abs(targetStorage - totalCapacity),
+        });
+        return;
+      }
+
+      const battery = batteryCatalog[index];
+      for (let count = 0; count <= maxCount; count += 1) {
+        counts[index] = count;
+        buildCombos(
+          index + 1,
+          totalCount + count,
+          totalCapacity + count * battery.capacity,
+          totalPrice + count * battery.price
+        );
+      }
+    };
+
+    buildCombos(0, 0, 0, 0);
+    const valid = combos.filter((c) => c.totalCapacity > 0);
+    if (!valid.length) return null;
+
+    const best = [...valid].sort(
+      (a, b) => a.diff - b.diff || a.totalCount - b.totalCount || a.totalPrice - b.totalPrice
+    )[0];
+
+    const batteries = best.counts
+      .map((count, index) =>
+        count
+          ? {
+              ...batteryCatalog[index],
+              count,
+            }
+          : null
+      )
+      .filter(Boolean);
+
+    return {
+      batteries,
+      targetStorage,
+      totalCapacity: best.totalCapacity,
+      totalPrice: best.totalPrice,
+      diff: best.diff,
+    };
+  };
+
+  const batterySuggestion = getBatterySuggestion(planProducers, planConsumers);
+
+  const handleApplySuggestedBatteries = () => {
+    if (!batterySuggestion) return;
+    batterySuggestion.batteries.forEach((battery) => {
+      handleAddBatteryById(battery.id, battery.count);
+    });
+  };
+
   const formatPayback = (months) => {
     const roundedMonths = Math.max(1, Math.round(months));
     const years = Math.floor(roundedMonths / 12);
@@ -721,6 +988,10 @@ function App() {
     solarSuggestion,
     selectedPanelId,
     selectedPanelCount,
+    batteryCatalog,
+    batterySuggestion,
+    selectedBatteryId,
+    selectedBatteryCount,
     planProducer,
     planProducerCount,
     planProducerPower,
@@ -742,13 +1013,17 @@ function App() {
     onPlanConsumerCountChange: setPlanConsumerCount,
     onPlanConsumerPowerChange: setPlanConsumerPower,
     onPlanDistributorChange: setPlanDistributor,
-    onPlanBatteryTypeChange: setPlanBatteryType,
+    onPlanBatteryTypeChange: handleBatteryTypeChange,
     onPlanBatteryCountChange: setPlanBatteryCount,
     onPlanBatteryCapacityChange: setPlanBatteryCapacity,
     onSelectPanel: setSelectedPanelId,
     onPanelCountChange: setSelectedPanelCount,
     onApplySuggestedPanels: handleApplySuggestedPanels,
     onAddSelectedPanel: () => handleAddSolarPanel(selectedPanelId, selectedPanelCount),
+    onSelectBattery: handleSelectBatteryId,
+    onBatteryCountChange: setSelectedBatteryCount,
+    onApplySuggestedBatteries: handleApplySuggestedBatteries,
+    onAddSelectedBattery: () => handleAddBatteryById(selectedBatteryId, selectedBatteryCount),
     onAddProducer: handleAddProducer,
     onAddConsumer: handleAddConsumer,
     onAddBattery: handleAddBattery,

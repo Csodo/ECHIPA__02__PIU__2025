@@ -3,16 +3,32 @@ import Chart from "chart.js/auto";
 
 const formatLei = (value) => {
   const n = Number(value || 0);
-  return n.toLocaleString("ro-RO") + " lei";
+  return `${n.toLocaleString("ro-RO")} lei`;
 };
 
 const formatKwh = (value) => {
   const n = Number(value || 0);
-  return n.toLocaleString("ro-RO") + " kWh";
+  return `${n.toLocaleString("ro-RO")} kWh`;
 };
 
 const formatDateRo = (d = new Date()) =>
   d.toLocaleString("ro-RO", { year: "numeric", month: "long", day: "2-digit" });
+
+const loadImageAsDataUrl = async (url) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    return null;
+  }
+};
 
 function buildChartImage({
   totalInvestment,
@@ -27,10 +43,7 @@ function buildChartImage({
 
   const labels = Array.from({ length: years }, (_, i) => `Anul ${i + 1}`);
   const yearlySavings = Number(monthlySavings || 0) * 12;
-
   const cumulative = labels.map((_, i) => yearlySavings * (i + 1));
-
-  // Linie "investitie" (constanta) ca referinta
   const investLine = labels.map(() => Number(totalInvestment || 0));
 
   const chart = new Chart(canvas.getContext("2d"), {
@@ -45,7 +58,7 @@ function buildChartImage({
           pointRadius: 3,
         },
         {
-          label: "Investiție totală",
+          label: "Investitie totala",
           data: investLine,
           borderDash: [8, 6],
           tension: 0,
@@ -60,7 +73,7 @@ function buildChartImage({
         legend: { position: "top" },
         title: {
           display: true,
-          text: "Economii cumulate vs investiție (10 ani)",
+          text: "Economii cumulate vs investitie (10 ani)",
         },
         tooltip: {
           callbacks: {
@@ -94,31 +107,40 @@ export async function exportRoiPdf({
   roiMonthlyProduction,
   roiResult,
 }) {
-  // calc investitie totala (poți ajusta logica dacă ai altă formulă)
   const install = Number(roiInstallCost || 0);
   const panel = Number(roiPanelCost || 0);
   const battery = Number(roiBatteryCost || 0);
   const totalInvestment = install + panel + battery;
 
+  const logoData = await loadImageAsDataUrl(
+    `${window.location.origin}/logo_descriptiv.png`
+  );
+
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   const margin = 48;
+
+  if (logoData) {
+    const logoSize = 56;
+    doc.addImage(logoData, "PNG", pageW - margin - logoSize, 30, logoSize, logoSize);
+  }
 
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("Raport ROI – Sistem Fotovoltaic", margin, 64);
+  doc.text("Raport ROI - Sistem Fotovoltaic", margin, 64);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.text(`Data: ${formatDateRo()}`, margin, 84);
 
-  // Linie subtire
+  // Separator
   doc.setDrawColor(210);
   doc.setLineWidth(1);
   doc.line(margin, 98, pageW - margin, 98);
 
-  // Bloc "Input"
+  // Bloc Input
   let y = 130;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -133,8 +155,8 @@ export async function exportRoiPdf({
     ["Cost panouri solare", formatLei(panel)],
     ["Cost baterii (optional)", formatLei(battery)],
     ["Economii lunare estimate", formatLei(roiMonthlySavings)],
-    ["Producție lunară estimată", formatKwh(roiMonthlyProduction)],
-    ["Investiție totală (calculată)", formatLei(totalInvestment)],
+    ["Productie lunara estimata", formatKwh(roiMonthlyProduction)],
+    ["Investitie totala (calculata)", formatLei(totalInvestment)],
   ];
 
   const col1 = margin;
@@ -148,7 +170,7 @@ export async function exportRoiPdf({
     y += 18;
   });
 
-  // Bloc "Rezultat"
+  // Bloc Rezultat
   y += 10;
   doc.setDrawColor(235);
   doc.line(margin, y, pageW - margin, y);
@@ -162,16 +184,16 @@ export async function exportRoiPdf({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
 
-  const paybackText = roiResult?.payback ?? "—";
-  const tenYearText = roiResult?.tenYearSavings ?? "—";
+  const paybackText = roiResult?.payback ?? "-";
+  const tenYearText = roiResult?.tenYearSavings ?? "-";
 
-  doc.text("Recuperarea investiției:", margin, y);
+  doc.text("Recuperarea investitiei:", margin, y);
   doc.setFont("helvetica", "bold");
   doc.text(String(paybackText), pageW - margin, y, { align: "right" });
   doc.setFont("helvetica", "normal");
   y += 18;
 
-  doc.text("Economii totale în 10 ani:", margin, y);
+  doc.text("Economii totale in 10 ani:", margin, y);
   doc.setFont("helvetica", "bold");
   doc.text(String(tenYearText), pageW - margin, y, { align: "right" });
   doc.setFont("helvetica", "normal");
@@ -184,12 +206,9 @@ export async function exportRoiPdf({
     years: 10,
   });
 
-  // Dimensiune grafic în pagină (îl scalăm frumos)
   const imgW = pageW - margin * 2;
-  const imgH = (imgW * 520) / 1000; // păstrează aspect ratio
+  const imgH = (imgW * 520) / 1000;
 
-  // dacă nu încape, trecem pe pagină nouă
-  const pageH = doc.internal.pageSize.getHeight();
   if (y + imgH + 60 > pageH) {
     doc.addPage();
     y = 64;
@@ -197,14 +216,12 @@ export async function exportRoiPdf({
 
   doc.addImage(chartImg, "PNG", margin, y, imgW, imgH);
 
-  // Footer mic
+  // Footer
   const footerY = pageH - 36;
   doc.setFontSize(9);
   doc.setTextColor(120);
   doc.text("Generat automat din calculatorul ROI", margin, footerY);
 
-  // Nume fișier
   const fileName = `raport-roi-${new Date().toISOString().slice(0, 10)}.pdf`;
-
   doc.save(fileName);
 }

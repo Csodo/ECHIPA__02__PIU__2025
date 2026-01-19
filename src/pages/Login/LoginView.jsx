@@ -55,16 +55,9 @@ function LoginView({
         <div className="actions">
           <button type="submit" className="btn-primary">
             Sign in
-          </button>
-          <button type="button" className="btn-ghost" onClick={onReset}>
-            Reset
-          </button>
+          </button> 
         </div>
       </form>
-
-      <div className={`status ${status.type}`} role="status" aria-live="polite">
-        {status.message || 'Use user1/user1, user2/user2, or user3/user3.'}
-      </div>
     </section>
   );
 }
