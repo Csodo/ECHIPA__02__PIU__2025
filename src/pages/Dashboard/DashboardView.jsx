@@ -20,26 +20,47 @@ function DashboardView({
   infoProps,
   calculatorProps,
 }) {
+  const renderPanel = (key, content, options = {}) => {
+    const { labelledBy, label } = options;
+    const ariaProps = labelledBy
+      ? { 'aria-labelledby': labelledBy }
+      : { 'aria-labelledby': `${key}-tab` };
+    if (label) {
+      ariaProps['aria-label'] = label;
+    }
+
+    return (
+      <div id={`${key}-panel`} role="tabpanel" hidden={activeView !== key} {...ariaProps}>
+        {activeView === key ? content : null}
+      </div>
+    );
+  };
+
   return (
-    <section className="dashboard-card">
+    <section className="dashboard-card" aria-labelledby="dashboard-title">
       <div className="dashboard-header">
         <div>
           <p className="brand-kicker">Access Portal</p>
-          <h1>Welcome</h1>
+          <h1 id="dashboard-title">Welcome</h1>
         </div>
-        <button type="button" className="btn-ghost" onClick={onSignOut}>
+        <button type="button" className="btn-ghost" onClick={onSignOut} aria-label="Sign out">
           Sign out
         </button>
       </div>
 
       {activeView === 'dashboard' ? (
-        <div className="dashboard-grid">
+        <div
+          className="dashboard-grid"
+          role="navigation"
+          aria-label="Navigare catre modulele Energy Portal"
+        >
           {tabItems.map((item) => (
             <button
               key={item.key}
               type="button"
               className="dashboard-tile"
               onClick={() => onChangeView(item.key)}
+              aria-label={`Deschide modulul ${item.label}`}
             >
               <span>{item.label}</span>
             </button>
@@ -47,26 +68,36 @@ function DashboardView({
         </div>
       ) : (
         <>
-          <div className="dashboard-tabs">
+          <div className="dashboard-tabs" role="tablist" aria-label="Module Energy Portal">
             {tabItems.map((item) => (
               <button
                 key={item.key}
                 type="button"
                 className={`tab-button ${activeView === item.key ? 'active' : ''}`}
                 onClick={() => onChangeView(item.key)}
+                role="tab"
+                id={`${item.key}-tab`}
+                aria-controls={`${item.key}-panel`}
+                aria-selected={activeView === item.key}
+                tabIndex={activeView === item.key ? 0 : -1}
               >
                 {item.label}
               </button>
             ))}
           </div>
 
-          {activeView === 'planificare' && <PlanificarePage {...planProps} />}
-          {activeView === 'monitorizare' && <MonitorizarePage {...monitorProps} />}
-          {activeView === 'informatii' && <InformatiiPage {...infoProps} />}
-          {activeView === 'info-aplicatie' && (
-            <InfoAplicatiePage onBack={() => onChangeView('informatii')} />
+          {renderPanel('planificare', <PlanificarePage {...planProps} />)}
+          {renderPanel('monitorizare', <MonitorizarePage {...monitorProps} />)}
+          {renderPanel('informatii', <InformatiiPage {...infoProps} />)}
+          {renderPanel(
+            'info-aplicatie',
+            <InfoAplicatiePage onBack={() => onChangeView('informatii')} />,
+            {
+              labelledBy: 'informatii-tab',
+              label: 'Informatii detaliate despre aplicatie',
+            },
           )}
-          {activeView === 'calculator' && <CalculatorPage {...calculatorProps} />}
+          {renderPanel('calculator', <CalculatorPage {...calculatorProps} />)}
         </>
       )}
     </section>

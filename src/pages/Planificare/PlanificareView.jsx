@@ -63,7 +63,7 @@ function PlanificareView({
 
   return (
     <div className="plan-layout">
-      <section className="plan-form">
+      <section className="plan-form" aria-label="Formular de planificare a echipamentelor">
         <h2>Introducere date generale</h2>
 
         <div className="plan-block">
@@ -104,10 +104,10 @@ function PlanificareView({
           </div>
         </div>
 
-        <div className="plan-block plan-offer">
+        <div className="plan-block plan-offer" aria-label="Recomandari panouri solare">
           <h3>Oferta panouri solare</h3>
           {solarSuggestion && suggestedPanels.length ? (
-            <div className="plan-offer-card">
+            <div className="plan-offer-card" role="status" aria-live="polite">
               <div>
                 <p className="plan-offer-title">Recomandare pentru consumul curent</p>
                 <strong>{suggestionLabel}</strong>
@@ -198,9 +198,13 @@ function PlanificareView({
           </button>
         </div>
 
-        {planNotice && <div className="plan-notice">{planNotice}</div>}
+        {planNotice && (
+          <div className="plan-notice" role="status" aria-live="polite">
+            {planNotice}
+          </div>
+        )}
 
-        <div className="plan-results">
+        <div className="plan-results" role="status" aria-live="polite">
           <h3>Rezultate</h3>
           {planResult ? (
             <ul>
@@ -214,11 +218,11 @@ function PlanificareView({
         </div>
       </section>
 
-      <aside className="plan-summary">
-        <div>
-          <h3>Producatori</h3>
+      <aside className="plan-summary" aria-label="Sumar configuratie curenta">
+        <div role="region" aria-labelledby="summary-producers">
+          <h3 id="summary-producers">Producatori</h3>
           {planProducers.length ? (
-            <ul>
+            <ul aria-live="polite">
               {planProducers.map((item, index) => (
                 <li key={`${item.type}-${index}`}>
                   {item.type} x{item.count} ({item.power} kW/unitate
@@ -230,10 +234,10 @@ function PlanificareView({
             <p>Nu exista producatori adaugati.</p>
           )}
         </div>
-        <div>
-          <h3>Consumatori</h3>
+        <div role="region" aria-labelledby="summary-consumers">
+          <h3 id="summary-consumers">Consumatori</h3>
           {planConsumers.length ? (
-            <ul>
+            <ul aria-live="polite">
               {planConsumers.map((item, index) => (
                 <li key={`${item.type}-${index}`}>
                   {item.type} x{item.count} ({item.power} kW)
@@ -244,10 +248,10 @@ function PlanificareView({
             <p>Nu exista consumatori adaugati.</p>
           )}
         </div>
-        <div>
-          <h3>Baterii</h3>
+        <div role="region" aria-labelledby="summary-batteries">
+          <h3 id="summary-batteries">Baterii</h3>
           {planBatteries.length ? (
-            <ul>
+            <ul aria-live="polite">
               {planBatteries.map((item, index) => (
                 <li key={`${item.type}-${item.capacity}-${index}`}>
                   {item.type} x{item.count} ({item.capacity} kWh fiecare)

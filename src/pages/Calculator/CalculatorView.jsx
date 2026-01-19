@@ -13,71 +13,97 @@ function CalculatorView({
   onCalculate,
   onExportPdf,
 }) {
+  const inputIds = {
+    install: 'calc-install-cost',
+    panels: 'calc-panel-cost',
+    battery: 'calc-battery-cost',
+    savings: 'calc-monthly-savings',
+    production: 'calc-monthly-production',
+  };
+
   return (
-    <div className="calc-layout">
-      <h2>Calculator ROI (Return On Investment)</h2>
+    <div className="calc-layout" aria-labelledby="calculator-heading">
+      <h2 id="calculator-heading">Calculator ROI (Return On Investment)</h2>
       <div className="calc-divider" aria-hidden="true" />
       <div className="calc-form">
         <div className="calc-row">
-          <label>Cost total instalare sistem:</label>
+          <label htmlFor={inputIds.install}>Cost total instalare sistem:</label>
           <div className="calc-input">
             <input
               type="number"
               min="0"
               value={roiInstallCost}
+              id={inputIds.install}
               onChange={(event) => onChangeInstallCost(event.target.value)}
+              aria-describedby={`${inputIds.install}-unit`}
             />
-            <span>lei</span>
+            <span id={`${inputIds.install}-unit`} aria-hidden="true">
+              lei
+            </span>
           </div>
         </div>
         <div className="calc-row">
-          <label>Cost panouri solare:</label>
+          <label htmlFor={inputIds.panels}>Cost panouri solare:</label>
           <div className="calc-input">
             <input
               type="number"
               min="0"
               value={roiPanelCost}
+              id={inputIds.panels}
               onChange={(event) => onChangePanelCost(event.target.value)}
+              aria-describedby={`${inputIds.panels}-unit`}
             />
-            <span>lei</span>
+            <span id={`${inputIds.panels}-unit`} aria-hidden="true">
+              lei
+            </span>
           </div>
         </div>
         <div className="calc-row">
-          <label>Cost baterii (optional):</label>
+          <label htmlFor={inputIds.battery}>Cost baterii (optional):</label>
           <div className="calc-input">
             <input
               type="number"
               min="0"
               value={roiBatteryCost}
+              id={inputIds.battery}
               onChange={(event) => onChangeBatteryCost(event.target.value)}
+              aria-describedby={`${inputIds.battery}-unit`}
             />
-            <span>lei</span>
+            <span id={`${inputIds.battery}-unit`} aria-hidden="true">
+              lei
+            </span>
           </div>
         </div>
         <div className="calc-row">
-          <label>Economii lunare estimate:</label>
+          <label htmlFor={inputIds.savings}>Economii lunare estimate:</label>
           <div className="calc-input">
             <input
               type="number"
               min="0"
               value={roiMonthlySavings}
+              id={inputIds.savings}
               onChange={(event) => onChangeMonthlySavings(event.target.value)}
+              aria-describedby={`${inputIds.savings}-unit`}
             />
-            <span>lei</span>
+            <span id={`${inputIds.savings}-unit`} aria-hidden="true">
+              lei
+            </span>
           </div>
         </div>
         <div className="calc-row">
-          <label>Productie lunara estimata:</label>
+          <label htmlFor={inputIds.production}>Productie lunara estimata:</label>
           <div className="calc-input">
             <input
               type="number"
               min="0"
               value={roiMonthlyProduction}
-              onChange={(event) =>
-                onChangeMonthlyProduction(event.target.value)
-              }
+              id={inputIds.production}
+              onChange={(event) => onChangeMonthlyProduction(event.target.value)}
+              aria-describedby={`${inputIds.production}-unit`}
             />
-            <span>kWh</span>
+            <span id={`${inputIds.production}-unit`} aria-hidden="true">
+              kWh
+            </span>
           </div>
         </div>
       </div>
@@ -91,7 +117,7 @@ function CalculatorView({
         </button>
       </div>
       <div className="calc-divider" aria-hidden="true" />
-      <div className="calc-results">
+      <div className="calc-results" role="status" aria-live="polite">
         <h3>Rezultat:</h3>
         {roiResult ? (
           <>

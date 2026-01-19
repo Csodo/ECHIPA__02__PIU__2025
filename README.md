@@ -66,9 +66,15 @@ Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic ca
 - `npm test -- --watch=false` ruleaza scenariile Jest/Testing Library existente (inclusiv `App.test.js`). Adauga teste suplimentare pentru fluxurile critice atunci cand extinzi aplicatia.
 - `npm run build` este recomandat inainte de livrare pentru a valida integrarea cu Chart.js/jsPDF si pentru a evita surprize in productie.
 
+## Accesibilitate
+- Interfata foloseste markup semantic si atributii ARIA pentru a facilita navigarea cu screen reader: tab-urile din Dashboard expun `role="tablist"`/`tabpanel`, tabelele din Monitorizare au heading-uri declarate, iar recomandarile/rezultatele din Planificare si Calculator sunt anuntate prin `aria-live`.
+- Toate campurile din calculatorul ROI au acum etichete asociate (`label htmlFor`) si descrieri pentru unitati, iar actiunile critice (Sign out, Actualizare date, toggles On/Off) au `aria-label` descriptive.
+- Mesajele dinamice (notificari de plan importat, rezultate de calcul, placeholder-ul de monitorizare s.a.) sunt livrate cu `role="status"` pentru a fi anuntate vocal.
+- Cum verifici rapid: ruleaza aplicatia (`npm start`), activeaza un screen reader (NVDA/VoiceOver) si navigheaza prin tab-uri folosind tastele sageti; poti folosi si Lighthouse/Axe DevTools in Chrome pentru a obtine un raport automat.
+
 ## Limitari si idei viitoare
 - Aplicatia foloseste doar `useState`; nu exista backend sau persistenta reala.
 - Estimarile sunt simplificate (bateriile stocheaza 60% din surplus, ROI nu tine cont de inflatie etc.) si sunt destinate strict demo-urilor.
 - Exportul PDF depinde de DOM (`<canvas>`); nu functioneaza in afara browserului fara adaptari.
 - Repo-ul are doar `node_modules` in `.gitignore`; evita sa commit-ui fisiere `.env` cu chei reale.
-- Accesibilitatea si i18n sunt minimale; UI-ul este in romana, cu etichete de baza si aria-limitata.
+- Desi UI-ul include imbunatatiri de accesibilitate, nu exista inca audit complet sau suport i18n; interfata este doar in romana si necesita teste suplimentare cu tehnologii asistive reale.
