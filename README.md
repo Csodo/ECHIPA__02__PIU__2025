@@ -31,7 +31,6 @@ Energy Portal este o aplicatie React (SPA) care simuleaza cap-coada un portal en
    ```
    REACT_APP_OPENAI_API_KEY=sk-xxxx
    ```
-   In proiecte reale adauga `.env` in `.gitignore` pentru a evita commit-ul cheilor.
 3. Porneste serverul de dezvoltare: `npm start` si deschide `http://localhost:3000`.
 4. Ruleaza testele: `npm test -- --watch=false`.
 5. Creeaza build-ul de productie: `npm run build`.

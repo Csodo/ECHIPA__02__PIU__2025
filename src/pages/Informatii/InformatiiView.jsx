@@ -37,7 +37,7 @@ function InformatiiView({ producers = [], consumers = [], batteries = [], distri
           <strong>{totalProducerPower.toFixed(2)} kW</strong>
         </div>
         <div className="info-row">
-          <span>Stocare in baterie:</span>
+          <span>Capacitate in baterie:</span>
           <strong>{batteryCapacityTotal.toFixed(2)} kWh</strong>
         </div>
         <div className="info-row">
