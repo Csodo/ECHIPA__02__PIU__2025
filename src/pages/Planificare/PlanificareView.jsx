@@ -271,6 +271,20 @@ function PlanificareView({
       </section>
 
       <aside className="plan-summary" aria-label="Sumar configuratie curenta">
+        <div role="region" aria-labelledby="summary-consumers">
+          <h3 id="summary-consumers">Consumatori</h3>
+          {planConsumers.length ? (
+            <ul aria-live="polite">
+              {planConsumers.map((item, index) => (
+                <li key={`${item.type}-${index}`}>
+                  {item.type} x{item.count} ({item.power} kW)
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Nu exista consumatori adaugati.</p>
+          )}
+        </div>
         <div role="region" aria-labelledby="summary-producers">
           <h3 id="summary-producers">Producatori</h3>
           {planProducers.length ? (
@@ -284,20 +298,6 @@ function PlanificareView({
             </ul>
           ) : (
             <p>Nu exista producatori adaugati.</p>
-          )}
-        </div>
-        <div role="region" aria-labelledby="summary-consumers">
-          <h3 id="summary-consumers">Consumatori</h3>
-          {planConsumers.length ? (
-            <ul aria-live="polite">
-              {planConsumers.map((item, index) => (
-                <li key={`${item.type}-${index}`}>
-                  {item.type} x{item.count} ({item.power} kW)
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Nu exista consumatori adaugati.</p>
           )}
         </div>
         <div role="region" aria-labelledby="summary-batteries">

@@ -125,3 +125,14 @@
     width: min(620px, 100%);
   }
 }
+
+@media (max-width: 640px) {
+  .App {
+    padding: 24px 12px;
+  }
+
+  .login-shell,
+  .dashboard-shell {
+    width: 100%;
+  }
+}

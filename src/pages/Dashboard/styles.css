@@ -104,3 +104,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .dashboard-card {
+    padding: 24px 18px 28px;
+    border-radius: 18px;
+  }
+
+  .dashboard-header {
+    gap: 10px;
+  }
+
+  .dashboard-tabs {
+    gap: 10px;
+  }
+
+  .dashboard-tile {
+    padding: 24px 14px;
+    min-height: 120px;
+    font-size: 16px;
+  }
+}

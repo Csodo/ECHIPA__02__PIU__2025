@@ -82,3 +82,20 @@
     align-items: flex-start;
   }
 }
+
+@media (max-width: 640px) {
+  .calc-layout {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .calc-actions {
+    flex-wrap: wrap;
+  }
+
+  .calc-actions button {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}

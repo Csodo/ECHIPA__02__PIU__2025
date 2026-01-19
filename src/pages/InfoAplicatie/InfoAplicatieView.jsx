@@ -3,32 +3,29 @@ function InfoAplicatieView({ onBack }) {
     <div className="info-layout info-detail">
       <h2>Despre aplicatie</h2>
       <p>
-        Aceasta aplicatie centralizeaza productia, consumul si stocarea unui sistem energetic
-        local intr-un flux unic: de la autentificare rapida pana la simularea ROI si exportul
-        de rapoarte PDF. In tabul Planificare construiesti configuratia cu producatori,
-        consumatori si baterii, in Monitorizare urmaresti starea lor in timp real, iar in
-        Informatii vezi un rezumat executiv al setup-ului si ai acces la documentatie si help.
+        Energy Portal centralizeaza productia, consumul si stocarea unui sistem energetic intr-un
+        flux unic: autentificare demo, planificare producatori/consumatori/baterii, monitorizare
+        live cu zi/noapte + innorare, predictii pe 6/12/24h si calculator ROI cu export PDF
+        (logo-ul din public/logo_descriptiv.png este inclus in raport).
       </p>
-      <p>
-        Exemple de utilizare:
-      </p>
+
+      <p>Exemple de utilizare:</p>
       <ul>
         <li>
-          Pregatirea unui demo pentru un operator de microgrid care vrea sa compare rapid
-          doua configuratii de panouri/baterii si impactul lor in costuri.
+          Demo pentru operatori de microgrid: compari rapid doua configuratii de panouri/baterii si
+          vezi impactul in costuri.
         </li>
         <li>
-          Simularea instalarii unui sistem fotovoltaic rezidential: introduci consumatorii,
-          generezi o recomandare de panouri si exporti un raport ROI pentru prezentari.
+          Simulare rezidentiala: introduci consumatorii, generezi o recomandare de panouri si
+          exporti un raport ROI pentru prezentari.
         </li>
         <li>
-          Training intern pentru echipele de vanzari/support, care pot arata clientilor cum
-          functioneaza monitorizarea on/off si modul in care sunt calculate economiile.
+          Training intern (vanzari/support): arati clientilor cum functioneaza monitorizarea
+          on/off si calculul economiilor.
         </li>
       </ul>
-      <p>
-        Aplicatia este utila in special cand ai nevoie de:
-      </p>
+
+      <p>Aplicatia te ajuta cand ai nevoie de:</p>
       <ul>
         <li>O vedere rapida asupra balantei productie vs. consum si a energiei stocate.</li>
         <li>
@@ -36,14 +33,17 @@ function InfoAplicatieView({ onBack }) {
           comunicarea rezultatelor intr-un PDF usor de distribuit.
         </li>
         <li>
-          Explorarea unor scenarii „ce-ar fi daca” fara a conecta senzori reali, folosind date
-          mock pentru a valida fluxuri UI si mesaje catre utilizator.
+          Explorarea unor scenarii "ce-ar fi daca" fara a conecta senzori reali, folosind date mock
+          pentru a valida fluxuri UI si mesaje.
         </li>
       </ul>
+
       <p>
         Datele sunt orientative, dar poti ajusta configuratia oricand pentru a testa impactul
-        estimat. Scopul este sa livreze rapid insight-uri vizuale intr-un prototip coerent.
+        estimat si pentru a genera materiale de prezentare (inclusiv PDF cu logo). Scopul este sa
+        livreze rapid insight-uri vizuale intr-un prototip coerent.
       </p>
+
       <button type="button" className="btn-ghost" onClick={onBack}>
         Inapoi
       </button>

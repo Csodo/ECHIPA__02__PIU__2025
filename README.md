@@ -1,15 +1,15 @@
 # Energy Portal (React)
 
-Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic cap-coada: autentifici utilizatorii cu conturi demo, planifici producatori/consumatori/baterii, monitorizezi live productia/consumul, consulti sumarul de sistem si rulezi un calculator ROI cu export PDF. Este gandita pentru demo-uri rapide si user testing pentru operatori de microgrid sau proprietari de sisteme fotovoltaice rezidentiale.
+Energy Portal este o aplicatie React (SPA) care simuleaza cap-coada un portal energetic: autentifici utilizatorii cu conturi demo, planifici producatori/consumatori/baterii, monitorizezi live productia/consumul, consulti sumarul de sistem si rulezi un calculator ROI cu export PDF (include logo-ul descriptiv din `public/logo_descriptiv.png`, plasat in dreapta sus). Este gandita pentru demo-uri rapide si user testing pentru operatori de microgrid sau proprietari de sisteme fotovoltaice rezidentiale.
 
 ## Functionalitati principale
 - Autentificare demo cu useri predefiniti si mesaj de status vizibil in formular.
 - Planificare echipamente: adaugi consumatori, producatori (inclusiv panouri solare) si banci de baterii, setezi distribuitorul si obtii estimari de cost/consum/productie; include recomandari automate de panouri solare.
-- Monitorizare live: planul este sincronizat automat, poti porni/opri echipamente individual si vezi productie, consum, energie stocata si livrata in retea in timp real; productia solara tine cont de zi/noapte si innorare (Open-Meteo).
+- Monitorizare live: planul este sincronizat automat, poti porni/opri echipamente individual si vezi productie, consum, energie stocata si livrata in retea in timp real; productia solara tine cont de zi/noapte, innorare si timezone (Open-Meteo).
 - Alerta productie: daca productia curenta este 0, este afisat motivul (noapte, innorat, producatori opriti etc.).
 - Predictie energie: estimari pe 6/12/24 ore pentru productie si consum, accesibile din monitorizare.
 - Informatii & help: sumar al configuratiei, linkuri utile si pagina dedicata cu explicatii despre aplicatie.
-- Calculator ROI: introduci costuri + economii lunare si afli perioada estimata de recuperare plus economiile pe 10 ani; poti exporta raport PDF cu grafic (Chart.js + jsPDF).
+- Calculator ROI: introduci costuri + economii lunare si afli perioada estimata de recuperare plus economiile pe 10 ani; export PDF cu grafic (Chart.js + jsPDF) si logo descriptiv inclus automat.
 - Asistent AI optional: bubble de chat bazat pe OpenAI (`gpt-4o-mini`) care raspunde la intrebari despre aplicatie daca este setata variabila `REACT_APP_OPENAI_API_KEY`.
 
 ## Stack si arhitectura
@@ -49,7 +49,7 @@ Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic ca
 3. **Monitorizare**: planul este preluat automat, fiecare echipament are toggle On/Off, iar productia/consumul sunt recalculare live la interval fix; productia solara tine cont de zi/noapte si cloud cover.
 4. **Predictie**: din monitorizare poti accesa estimarile pe 6/12/24 ore pentru productie si consum.
 5. **Informatii / InfoAplicatie**: vezi sumarul sistemului pornind de la datele planului si accesezi ghidurile recomandate.
-6. **Calculator ROI**: introdu costurile si economiile lunare; `formatPayback` transforma rezultatele in ani/luni, iar `exportRoiPdf` produce raportul PDF cu grafic al economiilor cumulate pe 10 ani.
+6. **Calculator ROI**: introdu costurile si economiile lunare; `formatPayback` transforma rezultatele in ani/luni, iar `exportRoiPdf` produce raportul PDF cu grafic al economiilor cumulate pe 10 ani si logo-ul din `public/`.
 7. **Asistent Energy Portal**: dupa login apare bubble-ul de chat; daca lipseste cheia API, utilizatorul este informat sa configureze `.env`.
 
 ## Structura proiectului
@@ -76,6 +76,11 @@ Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic ca
 - Toate campurile din calculatorul ROI au acum etichete asociate (`label htmlFor`) si descrieri pentru unitati, iar actiunile critice (Sign out, toggles On/Off, predictie) au `aria-label` descriptive.
 - Mesajele dinamice (alerta productie, rezultate de calcul, placeholder-ul de monitorizare s.a.) sunt livrate cu `role="status"` sau `role="alert"` pentru a fi anuntate vocal.
 - Cum verifici rapid: ruleaza aplicatia (`npm start`), activeaza un screen reader (NVDA/VoiceOver) si navigheaza prin tab-uri folosind tastele sageti; poti folosi si Lighthouse/Axe DevTools in Chrome pentru a obtine un raport automat.
+
+## Brief rapid pentru logo / identitate
+- Concept: energie moderna si transparenta; accent pe control (toggle-uri On/Off) si echilibru productie/consum.
+- Paleta: fundal inchis, accente rosu/burgund + alb pentru contrast; trebuie sa functioneze si monocrom in PDF.
+- Forme: icoana rotunjita, cu simbol solar si unda de energie/grafic ascendent; potrivita pentru header si rapoarte.
 
 ## Limitari si idei viitoare
 - Aplicatia foloseste doar `useState`; nu exista backend sau persistenta reala.
