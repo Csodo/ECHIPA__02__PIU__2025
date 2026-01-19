@@ -3,6 +3,7 @@ import './styles/global.css';
 import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
 import { distributorRates } from './config/distributors';
+import AssistantChat from './components/AssistantChat';
 import { exportRoiPdf } from './pages/Calculator/exportRoiPdf';
 
 function App() {
@@ -561,6 +562,7 @@ function App() {
           />
         )}
       </main>
+      {isAuthed && <AssistantChat />}
     </div>
   );
 }
