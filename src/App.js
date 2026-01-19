@@ -3,6 +3,7 @@ import './styles/global.css';
 import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
 import { distributorRates } from './config/distributors';
+import { exportRoiPdf } from './pages/Calculator/exportRoiPdf';
 
 function App() {
   const [username, setUsername] = useState("");
@@ -443,6 +444,21 @@ function App() {
     });
   };
 
+  const handleExportRoiReport = async () => {
+    if (!roiResult) {
+      window.alert("Calculeaza ROI inainte de export.");
+      return;
+    }
+    await exportRoiPdf({
+      roiInstallCost,
+      roiPanelCost,
+      roiBatteryCost,
+      roiMonthlySavings,
+      roiMonthlyProduction,
+      roiResult,
+    });
+  };
+
   const planProps = {
     producerOptions,
     consumerOptions,
@@ -517,6 +533,7 @@ function App() {
     onChangeMonthlySavings: setRoiMonthlySavings,
     onChangeMonthlyProduction: setRoiMonthlyProduction,
     onCalculate: handleCalculateRoi,
+    onExportPdf: handleExportRoiReport,
   };
 
   return (
