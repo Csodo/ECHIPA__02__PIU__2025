@@ -1,43 +1,74 @@
 # Energy Portal (React)
 
-Small React SPA care simuleaza un portal energetic: autentificare fictiva, planificare a echipamentelor (producatori/consumatori), monitorizare on/off si un calculator ROI. UI-ul este impartit pe pagini dedicate, fiecare cu propriul folder, view si stylesheet.
+Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic cap-coada: autentifici utilizatorii cu conturi demo, planifici producatori/consumatori/baterii, importi planul in monitorizare, consulti sumarul de sistem si rulezi un calculator ROI cu export PDF. Este gandita pentru demo-uri rapide si user testing pentru operatori de microgrid sau proprietari de sisteme fotovoltaice rezidentiale.
 
-## Ce face aplicatia
-- Autentificare demo cu useri predefiniti.
-- Planificare: adaugi producatori/consumatori, vezi cost/consum/producere estimate, importi planul in monitorizare.
-- Monitorizare: vezi productie/consum/stocare, poti porni/opri echipamente si recalcula rapid valorile.
-- Informatii: sumar de sistem + linkuri utile si o pagina de help despre aplicatie.
-- Calculator ROI: introduci costuri/economii si obtii perioada de recuperare + economii pe 10 ani.
+## Functionalitati principale
+- Autentificare demo cu useri predefiniti si mesaj de status vizibil in formular.
+- Planificare echipamente: adaugi producatori, consumatori si banci de baterii, setezi distribuitorul si obtii estimari de cost/consum/productie; include recomandari automate de panouri solare.
+- Monitorizare live: importi planul, poti porni/opri echipamente individual si vezi productie, consum, energie stocata si livrata in retea recalculata instant.
+- Informatii & help: sumar al configuratiei, linkuri utile si pagina dedicata cu explicatii despre aplicatie.
+- Calculator ROI: introduci costuri + economii lunare si afli perioada estimata de recuperare plus economiile pe 10 ani; poti exporta raport PDF cu grafic (Chart.js + jsPDF).
+- Asistent AI optional: bubble de chat bazat pe OpenAI (`gpt-4o-mini`) care raspunde la intrebari despre aplicatie daca este setata variabila `REACT_APP_OPENAI_API_KEY`.
 
-## Pentru cine si scop
-Aplicatia este gandita pentru un mic operator/administrator de microgrid sau sistem fotovoltaic rezidential care vrea sa-si simuleze rapid configuratia, sa monitorizeze consumul/producerea si sa evalueze recuperarea investitiei. Este un prototip UI, cu date mock, util pentru demo-uri de produs sau user testing.
+## Stack si arhitectura
+- React 19 + Create React App (`react-scripts` 5) cu CSS modularizat pe pagini si stiluri globale in `src/styles/global.css`.
+- Toata starea (login, plan, monitorizare, ROI) este centralizata in `src/App.js` si transmisa ca props catre paginile din `src/pages/*`.
+- `Chart.js` si `jsPDF` genereaza graficul si raportul PDF din calculatorul ROI.
+- `src/config/distributors.js` pastreaza tarifele distribuitorilor pentru a fi usor de extins.
+- `src/components/AssistantChat.jsx` gestioneaza conversatia cu OpenAI si este randat doar dupa autentificare.
+- Testele sunt scrise cu `@testing-library/*` + Jest (vezi `src/App.test.js`).
 
-## Brief scurt pentru designer (logo)
-- Nume: „Energy Portal” (poate abreviat „EP”). Ton: modern/tech, dar accesibil.
-- Tema vizuala: energie regenerabila + control/monitorizare; poti folosi simboluri de flux energetic, panou solar stilizat, grafic/onda sau un buton power combinat cu un portal/arc.
-- Culori de baza in UI: fundal inchis (#0b0b0b) cu accente rosii (#e3172f). Logo-ul poate folosi o versiune monocroma alba/rosie pe fundal inchis, plus o varianta pe fond deschis.
-- Stil: geometric si curat, usor de redimensionat la favicon si avatar; evita detalii foarte fine.
-- Optional slogan de ghidaj: „Planifica. Monitorizeaza. Optimizeaza.” (nu obligatoriu in lockup).
+## Setup rapid
+### Cerinte
+- Node.js 18+ si npm (sau un manager compatibil).
 
-## Cum rulezi
-- Instaleaza dependintele: `npm install`
-- Porneste in dev: `npm start`
-- Ruleaza testele: `npm test -- --watch=false`
-`
-Conturi de test: `user1/user1`, `user2/user2`, `user3/user3`.
+### Pasii
+1. Instaleaza dependintele: `npm install`.
+2. (Optional) Creeaza `.env` si seteaza cheia OpenAI pentru chat:
+   ```
+   REACT_APP_OPENAI_API_KEY=sk-xxxx
+   ```
+   In proiecte reale adauga `.env` in `.gitignore` pentru a evita commit-ul cheilor.
+3. Porneste serverul de dezvoltare: `npm start` si deschide `http://localhost:3000`.
+4. Ruleaza testele: `npm test -- --watch=false`.
+5. Creeaza build-ul de productie: `npm run build`.
+
+## Conturi demo
+| Username | Password | Observatii |
+| --- | --- | --- |
+| `user1` | `user1` | Mesajul din formular mentioneaza acest cont |
+| `user2` | `user2` | Alternativa pentru testare |
+| `user3` | `user3` | Alternativa pentru testare |
+
+## Flux recomandat
+1. **Autentificare** cu unul dintre conturile demo. "Reset" goleste formularul si revine la status neutru.
+2. **Planificare**: adauga consumatori/producatori/baterii, ajusteaza distribuitorul si foloseste recomandarile automate de panouri (`getSolarSuggestion`). "Calculeaza estimare" ofera un snapshot fictiv, iar "Importa plan" trimite configuratia catre monitorizare.
+3. **Monitorizare**: fiecare echipament importat are toggle On/Off. "Actualizare date" apeleaza `buildMonitorMetrics` pentru a recalcua productia, consumul, energia stocata (60% din surplus) si energia livrata in retea.
+4. **Informatii / InfoAplicatie**: vezi sumarul sistemului pornind de la datele planului si accesezi ghidurile recomandate.
+5. **Calculator ROI**: introdu costurile si economiile lunare; `formatPayback` transforma rezultatele in ani/luni, iar `exportRoiPdf` produce raportul PDF cu grafic al economiilor cumulate pe 10 ani.
+6. **Asistent Energy Portal**: dupa login apare bubble-ul de chat; daca lipseste cheia API, utilizatorul este informat sa configureze `.env`.
 
 ## Structura proiectului
-- `src/styles/global.css` – tema globala, butoane, shell-uri.
-- `src/pages/*/` – cate un folder per pagina, cu `index.js` (container), `*View.jsx` (JSX) si `styles.css`:
-  - `Login/` – formularul de autentificare si starea de status.
-  - `Dashboard/` – header + tab-uri; ruteaza catre subpagini.
-  - `Planificare/` – formulare pentru producatori/consumatori si sumar plan.
-  - `Monitorizare/` – tablou live cu toggle-uri on/off.
-  - `Informatii/` – sumar sistem + linkuri utile.
-  - `InfoAplicatie/` – descriere aplicatie (foloseste stilul Informatii).
-  - `Calculator/` – calculator ROI cu rezultat simulare.
-- `src/App.js` – logica principala (state pentru auth, plan, monitorizare, ROI) si legarea paginilor.
+- `public/` - favicon, manifest si logourile folosite la login.
+- `src/App.js` - logica centrala pentru auth, planificare, monitorizare si calculator ROI.
+- `src/components/AssistantChat.jsx` - asistent AI + stiluri dedicate.
+- `src/pages/Login` - formularul de autentificare.
+- `src/pages/Dashboard` - shell cu tab-uri (planificare, monitorizare, informatii, calculator).
+- `src/pages/Planificare` - formulare pentru echipamente, recomandari solare, sumar plan.
+- `src/pages/Monitorizare` - tabel cu toggle-uri si indicatori live.
+- `src/pages/Informatii` si `src/pages/InfoAplicatie` - sumar de sistem si descriere aplicatie.
+- `src/pages/Calculator` - calculatorul ROI si `exportRoiPdf.js`.
+- `src/config/distributors.js` - tarife mock pentru distribuitori.
+- `src/styles/global.css` - stiluri comune pentru shell, tipografie si butoane.
+- `src/App.test.js` - test care verifica randarea formularului de login.
 
-## Note
-- Datele sunt mock; calculele sunt orientative pentru demo.
-- Daca vezi warnings despre `baseline-browser-mapping`, poti ignora sau rula `npm i baseline-browser-mapping@latest -D`.
+## Testare si calitate
+- `npm test -- --watch=false` ruleaza scenariile Jest/Testing Library existente (inclusiv `App.test.js`). Adauga teste suplimentare pentru fluxurile critice atunci cand extinzi aplicatia.
+- `npm run build` este recomandat inainte de livrare pentru a valida integrarea cu Chart.js/jsPDF si pentru a evita surprize in productie.
+
+## Limitari si idei viitoare
+- Aplicatia foloseste doar `useState`; nu exista backend sau persistenta reala.
+- Estimarile sunt simplificate (bateriile stocheaza 60% din surplus, ROI nu tine cont de inflatie etc.) si sunt destinate strict demo-urilor.
+- Exportul PDF depinde de DOM (`<canvas>`); nu functioneaza in afara browserului fara adaptari.
+- Repo-ul are doar `node_modules` in `.gitignore`; evita sa commit-ui fisiere `.env` cu chei reale.
+- Accesibilitatea si i18n sunt minimale; UI-ul este in romana, cu etichete de baza si aria-limitata.
