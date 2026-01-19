@@ -18,7 +18,6 @@ function PlanificareView({
   planBatteryCapacity,
   planBatteries,
   planResult,
-  planNotice,
   onPlanProducerChange,
   onPlanProducerCountChange,
   onPlanProducerPowerChange,
@@ -37,7 +36,6 @@ function PlanificareView({
   onAddConsumer,
   onAddBattery,
   onCalculatePlan,
-  onImportPlan,
   onResetPlan,
 }) {
   const totalBatteryCapacity = planBatteries.reduce(
@@ -190,19 +188,10 @@ function PlanificareView({
           <button type="button" onClick={onCalculatePlan}>
             Calculeaza estimare
           </button>
-          <button type="button" onClick={onImportPlan}>
-            Importa plan
-          </button>
           <button type="button" onClick={onResetPlan}>
             Reseteaza datele
           </button>
         </div>
-
-        {planNotice && (
-          <div className="plan-notice" role="status" aria-live="polite">
-            {planNotice}
-          </div>
-        )}
 
         <div className="plan-results" role="status" aria-live="polite">
           <h3>Rezultate</h3>

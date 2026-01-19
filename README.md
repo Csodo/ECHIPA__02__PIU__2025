@@ -1,19 +1,22 @@
 # Energy Portal (React)
 
-Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic cap-coada: autentifici utilizatorii cu conturi demo, planifici producatori/consumatori/baterii, importi planul in monitorizare, consulti sumarul de sistem si rulezi un calculator ROI cu export PDF. Este gandita pentru demo-uri rapide si user testing pentru operatori de microgrid sau proprietari de sisteme fotovoltaice rezidentiale.
+Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic cap-coada: autentifici utilizatorii cu conturi demo, planifici producatori/consumatori/baterii, monitorizezi live productia/consumul, consulti sumarul de sistem si rulezi un calculator ROI cu export PDF. Este gandita pentru demo-uri rapide si user testing pentru operatori de microgrid sau proprietari de sisteme fotovoltaice rezidentiale.
 
 ## Functionalitati principale
 - Autentificare demo cu useri predefiniti si mesaj de status vizibil in formular.
-- Planificare echipamente: adaugi producatori, consumatori si banci de baterii, setezi distribuitorul si obtii estimari de cost/consum/productie; include recomandari automate de panouri solare.
-- Monitorizare live: importi planul, poti porni/opri echipamente individual si vezi productie, consum, energie stocata si livrata in retea recalculata instant.
+- Planificare echipamente: adaugi consumatori, producatori (inclusiv panouri solare) si banci de baterii, setezi distribuitorul si obtii estimari de cost/consum/productie; include recomandari automate de panouri solare.
+- Monitorizare live: planul este sincronizat automat, poti porni/opri echipamente individual si vezi productie, consum, energie stocata si livrata in retea in timp real; productia solara tine cont de zi/noapte si innorare (Open-Meteo).
+- Alerta productie: daca productia curenta este 0, este afisat motivul (noapte, innorat, producatori opriti etc.).
+- Predictie energie: estimari pe 6/12/24 ore pentru productie si consum, accesibile din monitorizare.
 - Informatii & help: sumar al configuratiei, linkuri utile si pagina dedicata cu explicatii despre aplicatie.
 - Calculator ROI: introduci costuri + economii lunare si afli perioada estimata de recuperare plus economiile pe 10 ani; poti exporta raport PDF cu grafic (Chart.js + jsPDF).
 - Asistent AI optional: bubble de chat bazat pe OpenAI (`gpt-4o-mini`) care raspunde la intrebari despre aplicatie daca este setata variabila `REACT_APP_OPENAI_API_KEY`.
 
 ## Stack si arhitectura
 - React 19 + Create React App (`react-scripts` 5) cu CSS modularizat pe pagini si stiluri globale in `src/styles/global.css`.
-- Toata starea (login, plan, monitorizare, ROI) este centralizata in `src/App.js` si transmisa ca props catre paginile din `src/pages/*`.
+- Toata starea (login, plan, monitorizare, meteo, ROI) este centralizata in `src/App.js` si transmisa ca props catre paginile din `src/pages/*`.
 - `Chart.js` si `jsPDF` genereaza graficul si raportul PDF din calculatorul ROI.
+- Integrarea meteo foloseste Open-Meteo pentru a modula productia solara si predictiile pe termen scurt.
 - `src/config/distributors.js` pastreaza tarifele distribuitorilor pentru a fi usor de extins.
 - `src/components/AssistantChat.jsx` gestioneaza conversatia cu OpenAI si este randat doar dupa autentificare.
 - Testele sunt scrise cu `@testing-library/*` + Jest (vezi `src/App.test.js`).
@@ -42,20 +45,22 @@ Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic ca
 
 ## Flux recomandat
 1. **Autentificare** cu unul dintre conturile demo. "Reset" goleste formularul si revine la status neutru.
-2. **Planificare**: adauga consumatori/producatori/baterii, ajusteaza distribuitorul si foloseste recomandarile automate de panouri (`getSolarSuggestion`). "Calculeaza estimare" ofera un snapshot fictiv, iar "Importa plan" trimite configuratia catre monitorizare.
-3. **Monitorizare**: fiecare echipament importat are toggle On/Off. "Actualizare date" apeleaza `buildMonitorMetrics` pentru a recalcua productia, consumul, energia stocata (60% din surplus) si energia livrata in retea.
-4. **Informatii / InfoAplicatie**: vezi sumarul sistemului pornind de la datele planului si accesezi ghidurile recomandate.
-5. **Calculator ROI**: introdu costurile si economiile lunare; `formatPayback` transforma rezultatele in ani/luni, iar `exportRoiPdf` produce raportul PDF cu grafic al economiilor cumulate pe 10 ani.
-6. **Asistent Energy Portal**: dupa login apare bubble-ul de chat; daca lipseste cheia API, utilizatorul este informat sa configureze `.env`.
+2. **Planificare**: adauga consumatori/producatori/baterii, ajusteaza distribuitorul si foloseste recomandarile automate de panouri (`getSolarSuggestion`). "Calculeaza estimare" ofera un snapshot fictiv.
+3. **Monitorizare**: planul este preluat automat, fiecare echipament are toggle On/Off, iar productia/consumul sunt recalculare live la interval fix; productia solara tine cont de zi/noapte si cloud cover.
+4. **Predictie**: din monitorizare poti accesa estimarile pe 6/12/24 ore pentru productie si consum.
+5. **Informatii / InfoAplicatie**: vezi sumarul sistemului pornind de la datele planului si accesezi ghidurile recomandate.
+6. **Calculator ROI**: introdu costurile si economiile lunare; `formatPayback` transforma rezultatele in ani/luni, iar `exportRoiPdf` produce raportul PDF cu grafic al economiilor cumulate pe 10 ani.
+7. **Asistent Energy Portal**: dupa login apare bubble-ul de chat; daca lipseste cheia API, utilizatorul este informat sa configureze `.env`.
 
 ## Structura proiectului
 - `public/` - favicon, manifest si logourile folosite la login.
 - `src/App.js` - logica centrala pentru auth, planificare, monitorizare si calculator ROI.
 - `src/components/AssistantChat.jsx` - asistent AI + stiluri dedicate.
 - `src/pages/Login` - formularul de autentificare.
-- `src/pages/Dashboard` - shell cu tab-uri (planificare, monitorizare, informatii, calculator).
+- `src/pages/Dashboard` - shell cu tab-uri (planificare, monitorizare, informatii, calculator); Predictia este accesata din monitorizare.
 - `src/pages/Planificare` - formulare pentru echipamente, recomandari solare, sumar plan.
 - `src/pages/Monitorizare` - tabel cu toggle-uri si indicatori live.
+- `src/pages/Predictie` - estimari 6/12/24 ore pentru productie si consum.
 - `src/pages/Informatii` si `src/pages/InfoAplicatie` - sumar de sistem si descriere aplicatie.
 - `src/pages/Calculator` - calculatorul ROI si `exportRoiPdf.js`.
 - `src/config/distributors.js` - tarife mock pentru distribuitori.
@@ -68,8 +73,8 @@ Energy Portal este o aplicatie React (SPA) care simuleaza un portal energetic ca
 
 ## Accesibilitate
 - Interfata foloseste markup semantic si atributii ARIA pentru a facilita navigarea cu screen reader: tab-urile din Dashboard expun `role="tablist"`/`tabpanel`, tabelele din Monitorizare au heading-uri declarate, iar recomandarile/rezultatele din Planificare si Calculator sunt anuntate prin `aria-live`.
-- Toate campurile din calculatorul ROI au acum etichete asociate (`label htmlFor`) si descrieri pentru unitati, iar actiunile critice (Sign out, Actualizare date, toggles On/Off) au `aria-label` descriptive.
-- Mesajele dinamice (notificari de plan importat, rezultate de calcul, placeholder-ul de monitorizare s.a.) sunt livrate cu `role="status"` pentru a fi anuntate vocal.
+- Toate campurile din calculatorul ROI au acum etichete asociate (`label htmlFor`) si descrieri pentru unitati, iar actiunile critice (Sign out, toggles On/Off, predictie) au `aria-label` descriptive.
+- Mesajele dinamice (alerta productie, rezultate de calcul, placeholder-ul de monitorizare s.a.) sunt livrate cu `role="status"` sau `role="alert"` pentru a fi anuntate vocal.
 - Cum verifici rapid: ruleaza aplicatia (`npm start`), activeaza un screen reader (NVDA/VoiceOver) si navigheaza prin tab-uri folosind tastele sageti; poti folosi si Lighthouse/Axe DevTools in Chrome pentru a obtine un raport automat.
 
 ## Limitari si idei viitoare

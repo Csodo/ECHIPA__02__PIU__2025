@@ -1,14 +1,24 @@
-function MonitorizareView({ monitorPlan, onRefresh, onToggleItem }) {
+function MonitorizareView({ monitorPlan, onToggleItem, onShowPrediction }) {
+  const formatPower = (value) =>
+    Number.isFinite(value) ? value.toFixed(2) : (0).toFixed(2);
+
   return (
     <div className="monitor-layout" role="region" aria-label="Monitorizare in timp real">
       {monitorPlan ? (
         <>
           <div className="monitor-header">
             <div className="monitor-stats" role="region" aria-live="polite" aria-label="Statistici curente">
-              <div className="monitor-stat">
-                <span>Productie curenta</span>
-                <span className="monitor-dots" aria-hidden="true" />
-                <strong>{monitorPlan.metrics.productionCurrent} kWh</strong>
+              <div className="monitor-stat monitor-stat-production">
+                <div className="monitor-stat-main">
+                  <span>Productie curenta</span>
+                  <span className="monitor-dots" aria-hidden="true" />
+                  <strong>{monitorPlan.metrics.productionCurrent} kWh</strong>
+                </div>
+                {monitorPlan.metrics.productionAlert && (
+                  <span className="monitor-alert" role="alert">
+                    {monitorPlan.metrics.productionAlert}
+                  </span>
+                )}
               </div>
               <div className="monitor-stat">
                 <span>Consum curent</span>
@@ -26,26 +36,14 @@ function MonitorizareView({ monitorPlan, onRefresh, onToggleItem }) {
                 <strong>{monitorPlan.metrics.gridDelivered} kWh</strong>
               </div>
             </div>
-            <button type="button" className="monitor-refresh" onClick={onRefresh} aria-label="Actualizeaza datele de monitorizare">
-              <svg className="refresh-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M20 12a8 8 0 1 1-2.34-5.66"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M20 4v6h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Actualizare date
+          </div>
+          <div className="monitor-actions">
+            <button
+              type="button"
+              className="monitor-action"
+              onClick={() => onShowPrediction?.()}
+            >
+              Predictie 6 / 12 / 24 ore
             </button>
           </div>
 
@@ -60,10 +58,13 @@ function MonitorizareView({ monitorPlan, onRefresh, onToggleItem }) {
                 <span role="columnheader">On/Off</span>
                 <span role="columnheader">Producator</span>
                 <span role="columnheader">Cantitate</span>
-                <span role="columnheader">Cantitate produsa</span>
                 <span role="columnheader">Productie</span>
               </div>
-              {monitorPlan.producers.map((item, index) => (
+              {monitorPlan.producers.map((item, index) => {
+                const currentPower = Number.isFinite(item.currentPower)
+                  ? item.currentPower
+                  : item.count * item.power;
+                return (
                 <div className="monitor-row" key={`${item.type}-${index}`} role="row">
                   <label className="monitor-toggle">
                     <input
@@ -76,10 +77,10 @@ function MonitorizareView({ monitorPlan, onRefresh, onToggleItem }) {
                   </label>
                   <span role="cell">{item.type}</span>
                   <span role="cell">{item.count}</span>
-                  <span role="cell">{(item.count * item.power).toFixed(2)} kWh</span>
-                  <span role="cell">{(item.count * item.power).toFixed(2)} kWh/h</span>
+                  <span role="cell">{formatPower(currentPower)} kWh/h</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -96,7 +97,11 @@ function MonitorizareView({ monitorPlan, onRefresh, onToggleItem }) {
                 <span role="columnheader">Cantitate</span>
                 <span role="columnheader">Cantitate folosita</span>
               </div>
-              {monitorPlan.consumers.map((item, index) => (
+              {monitorPlan.consumers.map((item, index) => {
+                const currentPower = Number.isFinite(item.currentPower)
+                  ? item.currentPower
+                  : item.count * item.power;
+                return (
                 <div className="monitor-row" key={`${item.type}-${index}`} role="row">
                   <label className="monitor-toggle">
                     <input
@@ -109,15 +114,16 @@ function MonitorizareView({ monitorPlan, onRefresh, onToggleItem }) {
                   </label>
                   <span role="cell">{item.type}</span>
                   <span role="cell">{item.count}</span>
-                  <span role="cell">{(item.count * item.power).toFixed(2)} kWh/h</span>
+                  <span role="cell">{formatPower(currentPower)} kWh/h</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </>
       ) : (
         <div className="dashboard-placeholder" role="status" aria-live="polite">
-          <p>Importa planul din tabul Planificare ca sa apara monitorizarea.</p>
+          <p>Adauga producatori si consumatori in Planificare ca sa vezi monitorizarea live.</p>
         </div>
       )}
     </div>

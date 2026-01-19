@@ -3,6 +3,7 @@ import MonitorizarePage from '../Monitorizare';
 import InformatiiPage from '../Informatii';
 import InfoAplicatiePage from '../InfoAplicatie';
 import CalculatorPage from '../Calculator';
+import PredictiePage from '../Predictie';
 
 const tabItems = [
   { key: 'planificare', label: 'Planificare' },
@@ -19,6 +20,7 @@ function DashboardView({
   monitorProps,
   infoProps,
   calculatorProps,
+  predictionProps,
 }) {
   const renderPanel = (key, content, options = {}) => {
     const { labelledBy, label } = options;
@@ -88,6 +90,9 @@ function DashboardView({
 
           {renderPanel('planificare', <PlanificarePage {...planProps} />)}
           {renderPanel('monitorizare', <MonitorizarePage {...monitorProps} />)}
+          {renderPanel('predictie', <PredictiePage {...predictionProps} />, {
+            label: 'Predictie energie',
+          })}
           {renderPanel('informatii', <InformatiiPage {...infoProps} />)}
           {renderPanel(
             'info-aplicatie',
